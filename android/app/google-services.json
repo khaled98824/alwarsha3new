@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "439442164451",
+    "firebase_url": "https://alwarsha3.firebaseio.com",
+    "project_id": "alwarsha3",
+    "storage_bucket": "alwarsha3.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:439442164451:android:a76c2eb1fa1482270253d6",
+        "android_client_info": {
+          "package_name": "alwarsha3.alwarsha3"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "439442164451-nqsufpjejpmmtu41rd86uaj7l353v9ra.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCWZJKY_gdt-TM1azS2zqfq1TeTv1AQfFc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "439442164451-nqsufpjejpmmtu41rd86uaj7l353v9ra.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "439442164451-me4een64bjoog9k3v4evqfg4hs9p23d6.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "alwarsha3.alwarsha3"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

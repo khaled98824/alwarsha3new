@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>439442164451-me4een64bjoog9k3v4evqfg4hs9p23d6.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.439442164451-me4een64bjoog9k3v4evqfg4hs9p23d6</string>
+	<key>API_KEY</key>
+	<string>AIzaSyA8w0_VWR4xpIaI2AcPK6Nrpw8lIegNy-Q</string>
+	<key>GCM_SENDER_ID</key>
+	<string>439442164451</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>alwarsha3.alwarsha3</string>
+	<key>PROJECT_ID</key>
+	<string>alwarsha3</string>
+	<key>STORAGE_BUCKET</key>
+	<string>alwarsha3.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:439442164451:ios:f0862da3a256c9900253d6</string>
+	<key>DATABASE_URL</key>
+	<string>https://alwarsha3.firebaseio.com</string>
+</dict>
+</plist>
