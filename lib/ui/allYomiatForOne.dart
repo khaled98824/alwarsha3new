@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'package:alwarsha3/ui/PageRoute.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
@@ -18,6 +20,8 @@ class allYomiatForOne extends StatelessWidget {
     return allYomiatForOneF();
   }
 }
+bool showListYomiat = false;
+QuerySnapshot qus ;
 
 class allYomiatForOneF extends StatefulWidget {
   @override
@@ -45,8 +49,8 @@ class _allYomiatForOneState extends State<allYomiatForOneF> {
         disabledTextColor: Colors.blue,
         onPressed: () {
           int i = 0;
-          while (allList.length > i) {
-            deleteAllYom(allList[i].id);
+          while (qus.documents.length > i) {
+            deleteAllYom(qus.documents[i].documentID);
             i++;
           }
           allList.clear();
@@ -65,32 +69,38 @@ class _allYomiatForOneState extends State<allYomiatForOneF> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    _streamSubscription =
-        yomReference.child('yomiat:$tabelNameSet').onChildAdded.listen(_onChildAdd);
-
-    Timer(Duration(milliseconds: 400), () {
-      searchYom(serchName);
-      sumYomiatF();
-    });
+    print(serchName);
+    getDocumentValue();
+    
   }
-
   List<YomiatModel> searchList = List();
 
-  List<YomiatModel> allList = List();
-  void _onChildAdd(Event event) {
-    YomiatModel yomiat = YomiatModel.FromSnapShot(event.snapshot);
+  Future getDocumentValue() async {
+    DocumentReference documentRef = Firestore.instance.collection(
+        'Yomiat:$tabelNameSet').document();
+    yomiatList = await documentRef.get();
 
+    var firestore = Firestore.instance;
+    qus = await firestore.collection('Yomiat:$tabelNameSet').where(
+        'zoneName', isEqualTo: nameZoneSet).where('name',isEqualTo: serchName).getDocuments();
     setState(() {
-      allList.add(yomiat);
+      showListYomiat = true;
     });
+    print(nameZoneSet);
+    print(tabelNameSet);
+    sumYomiatF();
+    return qus.documents;
   }
+
+  List<YomiatModel> allList = List();
+
 
   sumYomiatF() {
     sumYomiat = 0;
     Timer(Duration(milliseconds: 100), () {
-      for (int i = 0; i < searchList.length; i++) {
+      for (int i = 0; i < qus.documents.length; i++) {
         setState(() {
-          sumYomiat = sumYomiat.toDouble() + searchList[i].statues;
+          sumYomiat = sumYomiat.toDouble() + qus.documents[i]['status'];
         });
       }
     });
@@ -111,16 +121,27 @@ class _allYomiatForOneState extends State<allYomiatForOneF> {
                   Text(
                     '$serchName',
                     style: TextStyle(
-                        fontSize: 32, fontFamily: 'AmiriQuran', height: 1),
+                        fontSize: 26, fontFamily: 'AmiriQuran', height: 1),
                   ),
                   Text(
                     ' مجموع يوميات ',
                     style: TextStyle(
-                        fontSize: 32, fontFamily: 'AmiriQuran', height: 1),
+                        fontSize: 26, fontFamily: 'AmiriQuran', height: 1),
                   ),
                 ],
               ),
-              actions: <Widget>[],
+              leading: InkWell(
+                  onTap: () {
+                    setState(() {
+                      if (qus != null) {
+                        qus.documents.clear();
+                      }
+                    });
+                    Navigator.pushReplacement(context, BouncyPageRoute(widget: allYomiat()));
+                   // Navigator.of(context).pop();
+                  },
+                  child: Icon(
+                    Icons.arrow_back_ios, color: Colors.white, size: 26,)),
             ),
             body: Container(
                 width: MediaQuery.of(context).size.width,
@@ -186,9 +207,9 @@ class _allYomiatForOneState extends State<allYomiatForOneF> {
                     ),
                     Padding(padding: EdgeInsets.only(top: 5)),
                     Expanded(
-                      child: Container(
+                      child:showListYomiat? Container(
                         child: ListView.builder(
-                            itemCount: allList.length,
+                            itemCount: qus.documents.length,
                             itemBuilder: (BuildContext context, position) {
                               Divider(
                                 height: 1,
@@ -200,7 +221,7 @@ class _allYomiatForOneState extends State<allYomiatForOneF> {
                                 child: Card(
                                   child: ListTile(
                                     title: Text(
-                                      allList[position].name,
+                                      qus.documents[position]['name'],
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
                                           color: Colors.black,
@@ -209,18 +230,14 @@ class _allYomiatForOneState extends State<allYomiatForOneF> {
                                           height: 1.5),
                                     ),
                                     subtitle: Text(
-                                      '${allList[position].time}الوقت ',
+                                      '${qus.documents[position]['time']}الوقت ',
                                       style: TextStyle(
                                           fontSize: 15,
                                           color: Colors.green[900]),
                                     ),
                                     leading: InkWell(
                                       onLongPress: (){
-                                        deleteYom(allList[position].id);
-                                        allList.removeAt(position);
-                                        setState(() {
-                                          allList = allList;
-                                        });
+                                        deleteYom(position);
                                       },
                                       child: IconButton(
                                           icon: Icon(
@@ -232,7 +249,7 @@ class _allYomiatForOneState extends State<allYomiatForOneF> {
                                           }),
                                     ),
                                     trailing: Text(
-                                      allList[position].statues == 1
+                                        qus.documents[position]['status'] == 1
                                           ? "نصف يوم"
                                           : 'يوم',
                                       style: TextStyle(
@@ -243,7 +260,7 @@ class _allYomiatForOneState extends State<allYomiatForOneF> {
                                 ),
                               );
                             }),
-                      ),
+                      ):Container(),
                     ),
                   ],
                 ))));
@@ -253,7 +270,6 @@ class _allYomiatForOneState extends State<allYomiatForOneF> {
   void dispose() {
     // TODO: implement dispose
     super.dispose();
-    _streamSubscription.cancel();
     sumYomiat = 0.0;
   }
 
@@ -263,7 +279,7 @@ class _allYomiatForOneState extends State<allYomiatForOneF> {
         gravity: ToastGravity.CENTER,
         toastLength: Toast.LENGTH_LONG,
         backgroundColor: Colors.grey,
-        fontSize: 28,
+        fontSize: 22,
         textColor: Colors.white);
   }
 
@@ -273,7 +289,7 @@ class _allYomiatForOneState extends State<allYomiatForOneF> {
         gravity: ToastGravity.CENTER,
         toastLength: Toast.LENGTH_LONG,
         backgroundColor: Colors.blue,
-        fontSize: 28,
+        fontSize: 22,
         textColor: Colors.white);
   }
 
@@ -283,49 +299,38 @@ class _allYomiatForOneState extends State<allYomiatForOneF> {
         gravity: ToastGravity.CENTER,
         toastLength: Toast.LENGTH_LONG,
         backgroundColor: Colors.blue,
-        fontSize: 28,
+        fontSize: 22,
         textColor: Colors.white);
   }
 
-  var yomReference = FirebaseDatabase.instance.reference();
-
-  DatabaseReference getYomReference() {
-    yomReference = yomReference.root();
-    return yomReference;
-  }
-
-  void deleteYom(String id) {
-    yomReference = getYomReference();
-    yomReference.child('yomiat:$tabelNameSet').child(id).remove();
+  void deleteYom(int position) {
+    setState(() {
+      Firestore.instance.collection(
+          'Yomiat:$tabelNameSet')
+          .document(
+          qus.documents[position]
+              .documentID)
+          .delete().catchError((e) {
+        print(e);
+      });
+      qus = qus;
+      getDocumentValue();
+    });
     sumYomiatF();
   }
 
   void deleteAllYom(String id) {
-    yomReference = getYomReference();
-    yomReference.child('yomiat:$tabelNameSet').child(id).remove();
+    setState(() {
+      Firestore.instance.collection(
+          'Yomiat:$tabelNameSet')
+          .document(id)
+          .delete().catchError((e) {
+        print(e);
+      });
+      qus = qus;
+      getDocumentValue();
+    });
     ShowMessage();
   }
 
-  void searchYom(String searchStatment) {
-    searchList.clear();
-    setState(() {
-      allList = searchList;
-    });
-    Query query = yomReference
-        .child('yomiat:$tabelNameSet')
-        .orderByChild('name')
-        .equalTo(searchStatment.trim());
-
-    query.once().then((snapshot) {
-      String name, time, description;
-      int statues;
-      snapshot.value.forEach((key, value) {
-        name = value['name'].toString().trim();
-        time = value['time'].toString().trim();
-        statues = value['statues'];
-        description = value['description'].toString().trim();
-        searchList.add(YomiatModel(key, name, time, statues, description));
-      });
-    });
-  }
 }

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:alwarsha3/models/massrofatModel.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter/rendering.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -60,7 +61,7 @@ class _MassrofatFState extends State<MassrofatF> {
               title: Text(
                 'المصروفات اليومية ',
                 style: TextStyle(
-                    fontSize: 38, fontFamily: 'AmiriQuran', height: 1),
+                    fontSize: 28, fontFamily: 'AmiriQuran', height: 1),
               ),
             ),
             body: ListView(
@@ -81,7 +82,7 @@ class _MassrofatFState extends State<MassrofatF> {
                       Padding(padding: EdgeInsets.only(top: 40)),
                       Container(
                         width: 310,
-                        height: 90,
+                        height: 80,
                         decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(20),
                             color: Colors.white),
@@ -89,7 +90,7 @@ class _MassrofatFState extends State<MassrofatF> {
                           child: Text('لتسجيل المصاريف ضع القيمة في الحقل ثم اظغط على زر سجل ',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                                fontSize: 20, fontFamily: 'AmiriQuran', height: 1.5
+                                fontSize: 18, fontFamily: 'AmiriQuran', height: 1.5
                             ),
 
                           ),
@@ -292,11 +293,11 @@ class _MassrofatFState extends State<MassrofatF> {
   }
 
   void addYom(MassrofatModel massrofModel) {
-    massrofReference = getMassrofReference();
-    massrofReference
-        .child('massrofat:$tabelNameSet')
-        .push()
-        .set(massrofModel.toSnapShot());
+    Firestore.instance.collection('Massrofat:$tabelNameSet').document().setData({
+        'UserName': tabelNameSet,
+        'time': DateFormat('yyyy-MM-dd-HH:mm').format(DateTime.now()),
+        'zoneName':nameZoneSet,
+        'amount':amountTextController.text });
     Timer(Duration(milliseconds: 300),(){
       amountTextController.clear();
       showMessage3();

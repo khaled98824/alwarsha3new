@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:alwarsha3/ui/enterName.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:alwarsha3/models/StaticVirables.dart';
-import 'package:alwarsha3/models/yomiatModel.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
@@ -217,12 +217,7 @@ class _YomiatFState extends State<YomiatF> {
                                                 color: Colors.white,
                                                 onPressed: () {
                                                   if (!nameTextController.text.isEmpty) {
-                                                    addYom(YomiatModel(
-                                                        '',
-                                                        nameTextController.text,
-                                                        DateFormat('yyyy-MM-dd-HH:mm').format(DateTime.now()),
-                                                        dayStatuse,
-                                                        nameZoneSet));
+                                                    addYom(dayStatuse,);
                                                   }else{
                                                     ShowMessage2();
                                                   }
@@ -421,9 +416,15 @@ class _YomiatFState extends State<YomiatF> {
     return yomReference;
   }
 
-  void addYom(YomiatModel yomiatModel) {
-    yomReference = getYomReference();
-    yomReference.child('yomiat:$tabelNameSet').push().set(yomiatModel.toSnapShot());
+  void addYom(status) {
+    Firestore.instance.collection('Yomiat:$tabelNameSet').document().setData({
+      'UserName': tabelNameSet,
+      'time': DateFormat('yyyy-MM-dd-HH:mm').format(DateTime.now()),
+      'status': status,
+      'zoneName':nameZoneSet,
+      'name': nameTextController.text
+
+    });
     Timer(Duration(milliseconds: 300),(){
       nameTextController.clear();
       ShowMessage3();

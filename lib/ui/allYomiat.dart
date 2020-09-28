@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -29,10 +30,9 @@ class YomiatF extends StatefulWidget {
 
 String tabelName;
 String serchName;
-
-class _YomiatFState extends State<YomiatF> with WidgetsBindingObserver{
-  StreamSubscription<Event> _streamSubscription;
-
+bool showListYomiat = false;
+QuerySnapshot qus ;
+class _YomiatFState extends State<YomiatF> with WidgetsBindingObserver {
   DateTime time;
 
   @override
@@ -40,48 +40,39 @@ class _YomiatFState extends State<YomiatF> with WidgetsBindingObserver{
     WidgetsBinding.instance.addObserver(this);
     // TODO: implement initState
     super.initState();
-    Timer(Duration(milliseconds: 100), () {
-      _streamSubscription = yomReference
-          .child('yomiat:$tabelNameSet')
-          .onChildAdded
-          .listen(_onChildAdd);
-     // searchList = allList;
-
-    });
-    Timer(Duration(milliseconds: 300),(){
-      searchYom(nameZoneSet);
-    });
-    Timer(Duration(seconds: 2),(){
-      setState(() {
-        sumYomiatF();
-      });
-
-    });
+    getDocumentValue();
+    sumYomiatF();
   }
 
-  List<YomiatModel> searchList = List();
+  List<dynamic> allList;
 
-  List<YomiatModel> allList = List();
-  void _onChildAdd(Event event) {
-    YomiatModel yomiat = YomiatModel.FromSnapShot(event.snapshot);
+  Future getDocumentValue() async {
+    DocumentReference documentRef = Firestore.instance.collection(
+        'Yomiat:$tabelNameSet').document();
+    yomiatList = await documentRef.get();
 
+    var firestore = Firestore.instance;
+    qus = await firestore.collection('Yomiat:$tabelNameSet').where(
+        'zoneName', isEqualTo: nameZoneSet).getDocuments();
     setState(() {
-      allList.add(yomiat);
+      showListYomiat = true;
     });
+    print(nameZoneSet);
+    print(tabelNameSet);
+    return qus.documents;
   }
-  double sumYomiat =0.0;
+
+  double sumYomiat = 0.0;
 
   sumYomiatF() {
     sumYomiat = 0;
-Timer(Duration(milliseconds: 200),(){
-  for (int i = 0; i < allList.length; i++) {
-    setState(() {
-      sumYomiat = sumYomiat.toDouble() + allList[i].statues/2;
+    Timer(Duration(milliseconds: 200), () {
+      for (int i = 0; i < qus.documents.length; i++) {
+        setState(() {
+          sumYomiat = sumYomiat.toDouble() + qus.documents[i]['status']/2;
+        });
+      }
     });
-  }
-
-});
-
   }
 
 
@@ -97,22 +88,40 @@ Timer(Duration(milliseconds: 200),(){
               title: sumYomiat > 0.0 ? Text(
                 'كل اليوميات $sumYomiat',
                 style: TextStyle(
-                    fontSize: 31, fontFamily: 'AmiriQuran', height: 1),
-              ):Text(
+                    fontSize: 26, fontFamily: 'AmiriQuran', height: 1),
+              ) : Text(
                 'كل اليوميات ',
                 style: TextStyle(
-                    fontSize: 31, fontFamily: 'AmiriQuran', height: 1),
+                    fontSize: 26, fontFamily: 'AmiriQuran', height: 1),
               ),
+              leading: InkWell(
+                  onTap: () {
+                    setState(() {
+                      if (qus != null) {
+                        qus.documents.clear();
+                      }
+                    });
+
+                    Navigator.of(context).pop();
+                  },
+                  child: Icon(
+                    Icons.arrow_back_ios, color: Colors.white, size: 26,)),
             ),
             body: Container(
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height,
+                width: MediaQuery
+                    .of(context)
+                    .size
+                    .width,
+                height: MediaQuery
+                    .of(context)
+                    .size
+                    .height,
                 decoration: BoxDecoration(
                     gradient: LinearGradient(
                         colors: [
-                      Color(0xFF1b1e44),
-                      Color(0xFF2d3447),
-                    ],
+                          Color(0xFF1b1e44),
+                          Color(0xFF2d3447),
+                        ],
                         begin: Alignment.bottomCenter,
                         end: Alignment.topCenter,
                         tileMode: TileMode.clamp)),
@@ -141,10 +150,10 @@ Timer(Duration(milliseconds: 200),(){
                           padding: EdgeInsets.only(
                               top: 6, right: 17, left: 17, bottom: 6),
                           child: Text(
-                            'لعرض كل يوميات عامل معين ورؤية مجموعها فقط إظغط على إسمه',
+                            'لعرض كل يوميات عامل معين ورؤية مجموعها, فقط إظغط على إسمه',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 20,
+                              fontSize: 18,
                               fontFamily: 'AmiriQuran',
                               height: 1.5,
                             ),
@@ -160,77 +169,93 @@ Timer(Duration(milliseconds: 200),(){
                           borderRadius: BorderRadius.circular(20),
                           color: Colors.blue),
                     ),
-                    Expanded(
-                      child: Container(
-                        child: ListView.builder(
-                            itemCount: searchList.length,
-                            itemBuilder: (BuildContext context, position) {
-                              Divider(
-                                height: 1,
-                                thickness: 1,
-                                color: Colors.red,
-                              );
-                              return SizedBox(
-                                height: 65,
-                                child: Card(
-                                  child: ListTile(
-                                    title: Text(
-                                      searchList[position].name,
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                          color: Colors.black,
-                                          fontSize: 20,
-                                          fontFamily: 'AmiriQuran',
-                                          height: 1.5),
-                                    ),
-                                    subtitle: Text(
-                                      searchList[position].time,
-                                      style: TextStyle(
-                                          fontSize: 14,
-                                          color: Colors.green[900]),
-                                    ),
-                                    leading: InkWell(
-                                      onLongPress: (){
-                                        deleteYom(searchList[position].id);
-                                        searchList.removeAt(position);
-                                        setState(() {
-                                          searchList = searchList;
-                                        });
-                                      },
-                                      child: IconButton(
-                                          icon: Icon(
-                                            Icons.delete,
-                                            color: Colors.red,
-                                          ),
-                                          onPressed: () {
-                                            ShowMessage2();
-                                          }),
-                                    ),
-                                    trailing: Text(
-                                      searchList[position].statues == 1
-                                          ? "نصف يوم"
-                                          : 'يوم',
-                                      style: TextStyle(
-                                        color: Colors.blueAccent,
+                     Expanded(
+                      child: StreamBuilder(
+                        stream: Firestore.instance.collection(
+                            'Yomiat:$tabelNameSet').where(
+                            'zoneName', isEqualTo: nameZoneSet).snapshots(),
+                        builder: (context, snapshot) {
+                          return showListYomiat ? ListView.builder(
+                              itemCount: qus.documents.length,
+                              itemBuilder: (BuildContext context, position) {
+                                Divider(
+                                  height: 1,
+                                  thickness: 1,
+                                  color: Colors.red,
+                                );
+                                return SizedBox(
+                                  height: 65,
+                                  child: Card(
+                                    child: ListTile(
+                                      title: Text(
+                                        qus.documents[position]['name'],
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 20,
+                                            fontFamily: 'AmiriQuran',
+                                            height: 1.5),
                                       ),
-                                    ),
-                                    onTap: () {
-                                      serchName = searchList[position].name;
-                                      print(searchList.length);
-//                                      Navigator.push(
-//                                          context,
-//                                          BouncyPageRoute(
-//                                              widget: allYomiatForOne(),
-//                                          ),
-//                                      );
+                                      subtitle: Text(
+                                        qus.documents[position]['time'],
+                                        style: TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.green[900]),
+                                      ),
+                                      leading: InkWell(
+                                        onLongPress: () {
+                                          setState(() {
+                                            Firestore.instance.collection(
+                                                'Yomiat:$tabelNameSet')
+                                                .document(
+                                                qus.documents[position]
+                                                    .documentID)
+                                                .delete().catchError((e) {
+                                              print(e);
+                                            });
+                                            qus = qus;
+                                            getDocumentValue();
+                                          });
+                                        },
+                                        child: IconButton(
+                                            icon: Icon(
+                                              Icons.delete,
+                                              color: Colors.red,
+                                            ),
+                                            onPressed: () {
+                                              ShowMessage2();
+                                            }),
+                                      ),
+                                      trailing: Text(
+                                        qus.documents[position]['status'] == 1
+                                            ? "نصف يوم"
+                                            : 'يوم',
+                                        style: TextStyle(
+                                          color: Colors.blueAccent,
+                                        ),
+                                      ),
+                                      onTap: () {
+                                        serchName = qus.documents[position]['name'];
+                                        setState(() {
+                                          qus.documents.clear();
 
-                                    },
+                                        });
+                                     Navigator.pushReplacement(
+                                          context,
+                                          BouncyPageRoute(
+                                            widget: allYomiatForOne(),
+                                          ),
+                                        );
+
+                                      },
+                                    ),
                                   ),
-                                ),
-                              );
-                            }),
+                                );
+                              }) : Container();
+                        },
+
                       ),
-                    ),
+                    )
                   ],
                 ))));
   }
@@ -239,54 +264,19 @@ Timer(Duration(milliseconds: 200),(){
   void dispose() {
     // TODO: implement dispose
     super.dispose();
-    _streamSubscription.cancel();
-
   }
-
 
 
   ShowMessage2() {
     Fluttertoast.showToast(
-        msg: 'اظغط بإستمرار لحذف اليوميهً ',
+        msg: 'اظغط بإستمرار لحذف اليوميه',
         gravity: ToastGravity.CENTER,
         toastLength: Toast.LENGTH_LONG,
         backgroundColor: Colors.blue,
-        fontSize: 28,
+        fontSize: 22,
         textColor: Colors.white);
   }
 
-  var yomReference = FirebaseDatabase.instance.reference();
 
-  DatabaseReference getYomReference() {
-    yomReference = yomReference.root();
-    return yomReference;
-  }
 
-  void deleteYom(String id) {
-    yomReference = getYomReference();
-    yomReference.child('yomiat:$tabelNameSet').child(id).remove();
-    sumYomiatF();
-  }
-  void searchYom(String searchStatment) {
-    searchList.clear();
-    setState(() {
-      allList = searchList;
-    });
-    Query query = yomReference
-        .child('yomiat:$tabelNameSet')
-        .orderByChild('description')
-        .equalTo(nameZoneSet.trim());
-
-    query.once().then((snapshot) {
-      String name, time, description;
-      int statues;
-      snapshot.value.forEach((key, value) {
-        name = value['name'].toString().trim();
-        time = value['time'].toString().trim();
-        statues = value['statues'];
-        description = value['description'].toString().trim();
-        allList.add(YomiatModel(key, name, time, statues, description));
-      });
-    });
-  }
 }

@@ -1,12 +1,14 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:alwarsha3/models/massrofatModel.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/rendering.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:alwarsha3/models/StaticVirables.dart';
+import 'allYomiat.dart';
 import 'enterName.dart';
 
 class ShowAllMassrofat extends StatelessWidget {
@@ -24,6 +26,8 @@ class MassrofatF extends StatefulWidget {
 String tabelName;
 String serchNameMadfoaat;
 double sumMassrofat = 0.0;
+bool showListMassrofat = false;
+QuerySnapshot qus ;
 
 class _MassrofatFState extends State<MassrofatF> {
   TextEditingController nameTextController = TextEditingController();
@@ -38,35 +42,37 @@ class _MassrofatFState extends State<MassrofatF> {
   void initState() {
     // TODO: implement initState
     super.initState();
-
-    Timer(Duration(milliseconds: 100), () {
-      _streamSubscription = massrofReference
-          .child('massrofat:$tabelNameSet')
-          .onChildAdded
-          .listen(_onChildAdd);
-    });
+    getDocumentValue();
     Timer(Duration(milliseconds: 300),(){
-      searchYom(nameZoneSet);
+      //searchYom(nameZoneSet);
     });
     Timer(Duration(milliseconds: 500),(){
-      sumMassrofatF();
+     // sumMassrofatF();
     });
   }
-  List<MassrofatModel> searchList = List();
-  List<MassrofatModel> allList = List();
-  void _onChildAdd(Event event) {
-    MassrofatModel massrofat = MassrofatModel.FromSnapShot(event.snapshot);
+
+  Future getDocumentValue() async {
+    DocumentReference documentRef = Firestore.instance.collection(
+        'Massrofat:$tabelNameSet').document();
+    yomiatList = await documentRef.get();
+
+    var firestore = Firestore.instance;
+    qus = await firestore.collection('Massrofat:$tabelNameSet').getDocuments();
     setState(() {
-      allList.add(massrofat);
+      showListMassrofat = true;
     });
+    print(nameZoneSet);
+    print(tabelNameSet);
+    sumMassrofatF();
+    return qus.documents;
   }
 
   sumMassrofatF(){
     sumMassrofat = 0;
     Timer(Duration(milliseconds: 400),(){
-      for(int i =0 ; i < searchMassrofat.length ; i++){
+      for(int i =0 ; i < qus.documents.length ; i++){
         setState(() {
-          sumMassrofat = sumMassrofat.toDouble() +  searchMassrofat[i].statues ;
+          sumMassrofat = sumMassrofat.toDouble() +  qus.documents[i]['statues'] ;
         });
       }
     });
@@ -85,10 +91,10 @@ class _MassrofatFState extends State<MassrofatF> {
               title: Text(
                 'سجل كل المصروفات اليومية',
                 style: TextStyle(
-                    fontSize: 32, fontFamily: 'AmiriQuran', height: 1),
+                    fontSize: 26, fontFamily: 'AmiriQuran', height: 1),
               ),
             ),
-            body: Container(
+            body: showListMassrofat?Container(
                 width: MediaQuery.of(context).size.width,
                 height: MediaQuery.of(context).size.height,
                 decoration: BoxDecoration(
@@ -119,7 +125,7 @@ class _MassrofatFState extends State<MassrofatF> {
                     Expanded(
                       child: Container(
                         child: ListView.builder(
-                            itemCount: searchList.length,
+                            itemCount: qus.documents.length,
                             itemBuilder: (BuildContext context, position) {
                               Divider(
                                 height: 1,
@@ -135,11 +141,11 @@ class _MassrofatFState extends State<MassrofatF> {
                                       child: Padding(
                                         padding: EdgeInsets.symmetric(vertical: 2,horizontal: 3),
                                         child: Text(
-                                          "${searchList[position].statues.toString()} : المبلغ ",
+                                          "${qus.documents[position]['amount'].toString()} : المبلغ ",
                                           textAlign: TextAlign.center,
                                           style: TextStyle(
                                               color: Colors.black,
-                                              fontSize: 20,
+                                              fontSize: 18,
                                               fontFamily: 'AmiriQuran',
                                               height: 1.5
                                           ),
@@ -147,16 +153,23 @@ class _MassrofatFState extends State<MassrofatF> {
                                       ),
                                     ),
                                     subtitle: Text(
-                                      '${searchList[position].time}الوقت ',
+                                      '${qus.documents[position]['time']}الوقت ',
                                       style: TextStyle(
-                                          fontSize: 16, color: Colors.green[900]),
+                                          fontSize: 15, color: Colors.green[900]),
                                     ),
                                     leading: InkWell(
                                       onLongPress: (){
-                                        deleteYom(searchList[position].id);
-                                        searchList.removeAt(position);
                                         setState(() {
-                                          searchList = searchList;
+                                          Firestore.instance.collection(
+                                              'Massrofat:$tabelNameSet')
+                                              .document(
+                                              qus.documents[position]
+                                                  .documentID)
+                                              .delete().catchError((e) {
+                                            print(e);
+                                          });
+                                          qus = qus;
+                                          getDocumentValue();
                                         });
                                       },
                                       child: IconButton(
@@ -176,14 +189,15 @@ class _MassrofatFState extends State<MassrofatF> {
                       ),
                     ),
                   ],
-                ))));
+                )):Container(),
+        )
+    );
   }
 
   @override
   void dispose() {
     // TODO: implement dispose
     super.dispose();
-    _streamSubscription.cancel();
     sumMassrofat = 0.0;
   }
 
@@ -209,29 +223,5 @@ class _MassrofatFState extends State<MassrofatF> {
     massrofReference.child('massrofat:$tabelNameSet').child(id).remove();
     sumMassrofatF();
   }
-  List<MassrofatModel> searchMassrofat = List();
-  void searchYom (String searchStatment){
-    searchMassrofat.clear();
-    setState(() {
-      searchMassrofat = allList;
-    });
-    Query query = massrofReference
-        .child('massrofat:$tabelNameSet').orderByChild('description').
-    equalTo(nameZoneSet.trim());
-
-    query.once().then((snapshot){
-      String name,time,description;
-      double amount ;
-      snapshot.value.forEach((key ,value){
-        name = value['name'].toString().trim();
-        time = value['time'].toString().trim();
-        amount = value['amount'];
-        description = value['description'].toString().trim();
-        searchList.add(MassrofatModel(key, name, time, amount, description));
-
-      });
-    });
-    print(searchMassrofat.length);
   }
 
-}
