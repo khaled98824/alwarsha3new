@@ -3,6 +3,7 @@ import 'package:alwarsha3/models/StaticVirables.dart';
 import 'package:alwarsha3/ui/frontBage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -19,13 +20,17 @@ bool showBTNSave = true;
 bool showListZones = false;
 bool showText = true;
 String zoneText;
-DocumentSnapshot yomiatList;
+DocumentSnapshot usersList;
+bool equalZone ;
+bool equalName ;
 var _formKey = GlobalKey<FormState>();
 var dropSelectItemZone =dropItemsZone[0];
 List<String> dropItemsZone = [];
 
 class _EnterNameState extends State<EnterName> {
   List<String> _list =[];
+  List<String> _listUsers =[];
+  List<String> _listZones =[];
   String _zoneString ;
   @override
   void initState() {
@@ -37,7 +42,7 @@ class _EnterNameState extends State<EnterName> {
 
    Future getDocumentValue()async{
     DocumentReference documentRef =Firestore.instance.collection('Zones').document();
-    yomiatList = await documentRef.get();
+    usersList = await documentRef.get();
    var firestore = Firestore.instance;
    QuerySnapshot qus = await firestore.collection('Zones').where('UserName',isEqualTo: _nameController.text).getDocuments();
    for (int i=0; qus.documents.length>_list.length;  i ++){
@@ -46,20 +51,31 @@ class _EnterNameState extends State<EnterName> {
 
      });
    }
+    QuerySnapshot qusListUsers = await firestore.collection('Users').getDocuments();
+    for (int i=0; qusListUsers.documents.length>_listUsers.length;  i ++){
+      setState(() {
+        _listUsers.add(qusListUsers.documents[i]['UserName']);
+
+      });
+    }
+
+    QuerySnapshot qusListZones = await firestore.collection('Zones').where('UserName',isEqualTo:tabelNameSet).getDocuments();
+    for (int i=0; qusListZones.documents.length>_listZones.length;  i ++){
+      setState(() {
+        _listZones.add(qusListZones.documents[i]['Zone']);
+
+      });
+    }
+
     dropItemsZone.addAll(_list);
    setState(() {
-     Timer(Duration(microseconds: 200),(){
-       showListZones=true;
+     Timer(Duration(microseconds: 300),(){
+       showListZones = true;
      });
 
      nameZoneSet=_list[0];
      tabelNameSet=_nameController.text;
    });
-
-    print(dropItemsZone);
-    print(nameZoneSet);
-    print(tabelNameSet);
-   print(_list);
    return qus.documents;
 
   }
@@ -84,7 +100,7 @@ class _EnterNameState extends State<EnterName> {
 
     if (_formKey.currentState.validate()) {
       Firestore.instance.collection('Users').document().setData({
-        'UserName': _nameController.text,
+        'UserName': _nameController.text.toLowerCase().trimLeft(),
         'time': DateFormat('yyyy-MM-dd-HH:mm').format(DateTime.now()),
       });
     }
@@ -96,12 +112,16 @@ class _EnterNameState extends State<EnterName> {
     sharedPref.setString('zoneList', _zoneController.text);
     if (_formKey.currentState.validate()) {
       Firestore.instance.collection('Zones').document().setData({
-        'UserName': _nameController.text,
-        'Zone': _zoneController.text,
+        'UserName': _nameController.text.toLowerCase().trimLeft(),
+        'Zone': _zoneController.text.toLowerCase().trimLeft(),
         'time': DateFormat('yyyy-MM-dd-HH:mm').format(DateTime.now()),
       });}
     setState(() {
       dropItemsZone.add(_zoneController.text);
+      tabelNameSet = _nameController.text;
+    });
+    Timer(Duration(microseconds: 500),(){
+      _zoneController.clear();
     });
   }
 
@@ -189,7 +209,7 @@ class _EnterNameState extends State<EnterName> {
 
                                 textAlign: TextAlign.right,
                                 decoration: InputDecoration(
-                                  hintText: '!...أدخل إسم العامل هنا',
+                                  hintText: '!...أدخل إسمك',
                                   fillColor: Colors.white,
                                   hoverColor: Colors.white,
                                 ),
@@ -202,7 +222,19 @@ class _EnterNameState extends State<EnterName> {
                             InkWell(
                               onTap: () {
                                 if (_formKey.currentState.validate()) {
-                                  saveName();
+                                  equalName=false;
+                                  for(int i=0;i<_listUsers.length;i++){
+                                    if(_nameController.text.toLowerCase().trimLeft()==_listUsers[i]){
+                                      equalName=true;
+                                      showMessage('إسم المستخدم موجود مسبقاً رجاءاٌ اختر غيره');
+                                    }
+                                  }
+                                  print(equalName);
+                                  print(_listUsers);
+                                  if(equalName==false){
+                                    print('done');
+                                    saveName();
+                                  }
                                 }
 
                               },
@@ -257,7 +289,7 @@ class _EnterNameState extends State<EnterName> {
 
                           textAlign: TextAlign.right,
                           decoration: InputDecoration(
-                            hintText: '!...أدخل إسم العامل هنا',
+                            hintText: '!...أدخل إسم الورشة هنا',
                             fillColor: Colors.white,
                             hoverColor: Colors.white,
                           ),
@@ -269,8 +301,19 @@ class _EnterNameState extends State<EnterName> {
                       ),
                       InkWell(
                         onTap: () {
-                          saveZone();
-
+                          equalZone=false;
+                          for(int i=0;i<_listZones.length;i++){
+                            if(_zoneController.text.toLowerCase().trimLeft()==_listZones[i]){
+                              equalZone=true;
+                              showMessage('إسم الورشة موجود مسبقاً رجاءاٌ اختر غيره');
+                            }
+                          }
+                          print(equalZone);
+                          print(_listZones);
+                          if(equalZone==false){
+                            print('done');
+                            saveZone();
+                          }
                         },
                         child: Container(
                             decoration: BoxDecoration(
@@ -358,4 +401,13 @@ class _EnterNameState extends State<EnterName> {
       ],
     ));
   }
+}
+showMessage(String msg) {
+  Fluttertoast.showToast(
+      msg:msg,
+      gravity: ToastGravity.CENTER,
+      toastLength: Toast.LENGTH_LONG,
+      backgroundColor: Colors.blue,
+      fontSize: 15,
+      textColor: Colors.white);
 }

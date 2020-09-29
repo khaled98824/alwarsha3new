@@ -271,7 +271,7 @@ class _MassrofatFState extends State<MassrofatF> {
         gravity: ToastGravity.TOP,
         toastLength: Toast.LENGTH_LONG,
         backgroundColor: Colors.blue,
-        fontSize: 28,
+        fontSize: 22,
         textColor: Colors.white
     );
   }
@@ -280,7 +280,7 @@ class _MassrofatFState extends State<MassrofatF> {
         gravity: ToastGravity.BOTTOM,
         toastLength: Toast.LENGTH_LONG,
         backgroundColor: Colors.blue,
-        fontSize: 28,
+        fontSize: 22,
         textColor: Colors.white
     );
   }
@@ -293,11 +293,13 @@ class _MassrofatFState extends State<MassrofatF> {
   }
 
   void addYom(MassrofatModel massrofModel) {
+    double amount ;
+    amount = double.parse(amountTextController.text);
     Firestore.instance.collection('Massrofat:$tabelNameSet').document().setData({
         'UserName': tabelNameSet,
         'time': DateFormat('yyyy-MM-dd-HH:mm').format(DateTime.now()),
         'zoneName':nameZoneSet,
-        'amount':amountTextController.text });
+        'amount':amount });
     Timer(Duration(milliseconds: 300),(){
       amountTextController.clear();
       showMessage3();

@@ -1,15 +1,14 @@
 import 'dart:async';
-import 'dart:io';
-import 'package:alwarsha3/models/massrofatModel.dart';
 import 'package:alwarsha3/ui/enterName.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/rendering.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:alwarsha3/models/StaticVirables.dart';
 import 'PageRoute.dart';
 import 'allMadfoaatForOne.dart';
+import 'madfoaat.dart';
 
 class ShowAllMadfoaat extends StatelessWidget {
   @override
@@ -26,11 +25,10 @@ class MadfoaatF extends StatefulWidget {
 String tabelName;
 String serchNameMadfoaat;
 double sumMadfoaat = 0.0;
-
+String serchName;
+bool showListMadfoaat = false;
+QuerySnapshot qus ;
 class _MadfoaatFState extends State<MadfoaatF> {
-  TextEditingController nameTextController = TextEditingController();
-  StreamSubscription<Event> _streamSubscription;
-  TextEditingController searchTextController = TextEditingController();
 
 
   DateTime time;
@@ -39,46 +37,44 @@ class _MadfoaatFState extends State<MadfoaatF> {
   void initState() {
     // TODO: implement initState
     super.initState();
-
-    Timer(Duration(milliseconds: 200), () {
-      _streamSubscription = madfoaatReference
-          .child('madfoaat:$tabelNameSet')
-          .onChildAdded
-          .listen(_onChildAdd);
-      Timer(Duration(milliseconds: 400),(){
-        sumMassrofatF();
-      });
-    });
-
+    getDocumentValue();
   }
-  List<MassrofatModel> searchList = List();
-  List<MassrofatModel> allList = List();
-  void _onChildAdd(Event event) {
-    MassrofatModel madfoaat = MassrofatModel.FromSnapShot(event.snapshot);
 
+  Future getDocumentValue() async {
+    DocumentReference documentRef = Firestore.instance.collection(
+        'Madfoaat:$tabelNameSet').document();
+    usersList = await documentRef.get();
+
+    var firestore = Firestore.instance;
+    qus = await firestore.collection('Madfoaat:$tabelNameSet').getDocuments();
     setState(() {
-      allList.add(madfoaat);
-
+      showListMadfoaat = true;
     });
+    print(nameZoneSet);
+    print(tabelNameSet);
+    sumMadfoaatF();
+    return qus.documents;
   }
 
-  sumMassrofatF(){
-    sumMadfoaat = 0;
-    Timer(Duration(milliseconds: 400),(){
-      for(int i =0 ; i < allList.length ; i++){
+  double sumYomiat = 0.0;
+
+  sumMadfoaatF() {
+    sumMadfoaat = 0.0;
+    Timer(Duration(microseconds:20),(){
+      for(int i =0 ; i < qus.documents.length ; i++){
         setState(() {
-          sumMadfoaat = sumMadfoaat.toDouble() +  allList[i].statues - 0.010;
+          sumMadfoaat = sumMadfoaat.toDouble() +  qus.documents[i]['amount'] ;
         });
       }
     });
-
   }
+
 
   @override
   Widget build(BuildContext context) {
     Virables.table = tabelName;
     Virables.nameSearchMadfoaat = serchNameMadfoaat;
-    return SafeArea(
+    return showListMadfoaat? SafeArea(
         child: Scaffold(
             appBar: AppBar(
               backgroundColor: Colors.blueAccent,
@@ -86,8 +82,20 @@ class _MadfoaatFState extends State<MadfoaatF> {
               title: Text(
                 'سجل كل الدفعات',
                 style: TextStyle(
-                    fontSize: 38, fontFamily: 'AmiriQuran', height: 1),
+                    fontSize: 26, fontFamily: 'AmiriQuran', height: 1),
               ),
+              leading: InkWell(
+                  onTap: () {
+                    setState(() {
+                      if (qus != null) {
+                        qus.documents.clear();
+                      }
+                    });
+                    Navigator.pushReplacement(context, BouncyPageRoute(widget: Madfoaat()));
+                    // Navigator.of(context).pop();
+                  },
+                  child: Icon(
+                    Icons.arrow_back_ios, color: Colors.white, size: 26,)),
             ),
             body: Container(
                 width: MediaQuery.of(context).size.width,
@@ -107,9 +115,9 @@ class _MadfoaatFState extends State<MadfoaatF> {
                     Padding(padding: EdgeInsets.only(top: 20)),
                     Container(
                       child: Center(
-                        child: Text(' مجموع قيمة المدفوعات : ${sumMadfoaat.toStringAsFixed(3)}',style: TextStyle(
+                        child: Text(' مجموع قيمة المدفوعات : ${sumMadfoaat.toString()}',style: TextStyle(
                             color: Colors.white,
-                            fontSize: 24,
+                            fontSize: 19,
                             fontFamily: 'AmiriQuran',
                             height: 1
                         ),),
@@ -120,7 +128,7 @@ class _MadfoaatFState extends State<MadfoaatF> {
                     Expanded(
                       child: Container(
                         child: ListView.builder(
-                            itemCount: allList.length,
+                            itemCount: qus.documents.length,
                             itemBuilder: (BuildContext context, position) {
                               Divider(
                                 height: 1,
@@ -128,30 +136,37 @@ class _MadfoaatFState extends State<MadfoaatF> {
                                 color: Colors.red,
                               );
                               return SizedBox(
-                                height: 68,
+                                height: 65,
                                 child: Card(
                                   child: ListTile(
                                     title: Text(
-                                      allList[position].name,
+                                      qus.documents[position]['name'],
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
                                           color: Colors.black,
-                                          fontSize: 20,
+                                          fontSize: 18,
                                           fontFamily: 'AmiriQuran',
                                           height: 1.5
                                       ),
                                     ),
                                     subtitle: Text(
-                                      '${allList[position].time}الوقت ',
+                                      '${qus.documents[position]['time']}الوقت ',
                                       style: TextStyle(
-                                          fontSize: 15, color: Colors.green[900]),
+                                          fontSize: 14, color: Colors.green[900]),
                                     ),
                                     leading: InkWell(
                                       onLongPress: (){
-                                        deleteYom(allList[position].id);
-                                        allList.removeAt(position);
                                         setState(() {
-                                          allList = allList;
+                                          Firestore.instance.collection(
+                                              'Madfoaat:$tabelNameSet')
+                                              .document(
+                                              qus.documents[position]
+                                                  .documentID)
+                                              .delete().catchError((e) {
+                                            print(e);
+                                          });
+                                          qus = qus;
+                                          getDocumentValue();
                                         });
                                       },
                                       child: IconButton(
@@ -161,18 +176,16 @@ class _MadfoaatFState extends State<MadfoaatF> {
                                           ),
                                           onPressed: () {
                                             ShowMessage3();
-                                            print(allList[position].statues);
                                           }),
                                     ),
-                                    trailing:allList[position].statues==2.01? Text('2',style: TextStyle(
-                                      fontSize: 20
-                                    ),): Text('${allList[position].statues-0.010}',style: TextStyle(
-                                      fontSize: 20
+                                    trailing: Text('${ qus.documents[position]['amount'].toString()}',style: TextStyle(
+                                      fontSize: 18
                                     ),),
                                     onTap: () {
-                                      Navigator.push(context,
+                                        serchNameMadfoaat = qus.documents[position]['name'];
+                                      Navigator.pushReplacement(context,
                                           BouncyPageRoute(widget: allMadfoaatForOne()));
-                                      serchNameMadfoaat = allList[position].name;
+
                                     },
                                   ),
                                 ),
@@ -181,14 +194,15 @@ class _MadfoaatFState extends State<MadfoaatF> {
                       ),
                     ),
                   ],
-                ))));
+                ))
+        )
+    ):Container();
   }
 
   @override
   void dispose() {
     // TODO: implement dispose
     super.dispose();
-    _streamSubscription.cancel();
     sumMadfoaat = 0.0;
   }
   ShowMessage3() {
@@ -201,49 +215,4 @@ class _MadfoaatFState extends State<MadfoaatF> {
         textColor: Colors.white);
   }
 
-  var madfoaatReference = FirebaseDatabase.instance.reference();
-
-  DatabaseReference getYomReference() {
-    madfoaatReference = madfoaatReference.root();
-    return madfoaatReference;
-  }
-
-  void updateYom(MassrofatModel massrofatModel) {
-    madfoaatReference = getYomReference();
-    madfoaatReference.child('madfoaat:$tabelNameSet').child(massrofatModel.id).update({
-      'name': massrofatModel.name,
-      'time': massrofatModel.time,
-      'amount': massrofatModel.statues,
-      'description': massrofatModel.description
-    });
-  }
-
-  void deleteYom(String id) {
-    madfoaatReference = getYomReference();
-    madfoaatReference.child('madfoaat:$tabelNameSet').child(id).remove();
-    sumMassrofatF();
-  }
-  List<MassrofatModel> searchMadfoaat = List();
-  void searchYom (String searchStatment){
-    searchMadfoaat.clear();
-    setState(() {
-      allList = searchList;
-    });
-    Query query = madfoaatReference
-        .child('madfoaat:$tabelNameSet').orderByChild('name').
-    equalTo(searchStatment.trim());
-
-    query.once().then((snapshot){
-      String name,time,description;
-      double amount ;
-      snapshot.value.forEach((key ,value){
-        name = value['name'].toString().trim();
-        time = value['time'].toString().trim();
-        amount = value['amount'];
-        description = value['description'].toString().trim();
-        searchMadfoaat.add(MassrofatModel(key, name, time, amount, description));
-
-      });
-    });
-  }
 }

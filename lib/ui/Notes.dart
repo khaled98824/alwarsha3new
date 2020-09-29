@@ -1,7 +1,6 @@
 import 'dart:async';
-import 'package:alwarsha3/models/notesModel.dart';
 import 'package:alwarsha3/ui/enterName.dart';
-import 'package:firebase_database/firebase_database.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
@@ -19,32 +18,31 @@ class NotesF extends StatefulWidget {
   _NotesFState createState() => _NotesFState();
 }
 
+bool showListNotes = false;
+QuerySnapshot qus ;
+
 class _NotesFState extends State<NotesF> {
-  StreamSubscription<Event> _streamSubscription;
   TextEditingController txtNotes = TextEditingController();
-  String theNote;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    Timer(Duration(milliseconds: 300), () {
-      _streamSubscription = noteReference
-          .child('Notes:$tabelNameSet')
-          .onChildAdded
-          .listen(_onChildAdd);
-    });
-    setState(() {});
+    getDocumentValue();
   }
+  Future getDocumentValue() async {
+    DocumentReference documentRef = Firestore.instance.collection(
+        'Notes:$tabelNameSet').document();
+    usersList = await documentRef.get();
 
-  List<NotesModel> allList = List();
-
-  void _onChildAdd(Event event) {
-    NotesModel notes = NotesModel.FromSnapShot(event.snapshot);
-
+    var firestore = Firestore.instance;
+    qus = await firestore.collection('Notes:$tabelNameSet').getDocuments();
     setState(() {
-      allList.add(notes);
+      showListNotes = true;
     });
+    print(nameZoneSet);
+    print(tabelNameSet);
+    return qus.documents;
   }
 
   @override
@@ -55,7 +53,7 @@ class _NotesFState extends State<NotesF> {
             title: Text('الملاحظات',
               style: TextStyle(
                   color: Colors.white,
-                  fontSize:33,
+                  fontSize:24,
                   fontFamily: 'AmiriQuran',
                   height: 1.5
               ),
@@ -80,7 +78,7 @@ class _NotesFState extends State<NotesF> {
                     Padding(padding: EdgeInsets.only(top: 10)),
                     Container(
                       width: 330,
-                      height: 46,
+                      height: 36,
                       decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(20),
                           color: Colors.white),
@@ -88,7 +86,7 @@ class _NotesFState extends State<NotesF> {
                         child: Text('هنا يمكنك تدوين ملاحاتك ومراجعتها مهما طال الوقت',
                           style: TextStyle(
                               color: Colors.black,
-                              fontSize: 17,
+                              fontSize: 16,
                               fontFamily: 'AmiriQuran',
                               height: 1.5
                           ),
@@ -121,8 +119,7 @@ class _NotesFState extends State<NotesF> {
                                     style: TextStyle(color: Colors.white),
                                   ),
                                   onPressed: () {
-                                    addYom(NotesModel('', txtNotes.text,
-                                        DateFormat('yyyy-MM-dd-HH:mm').format(DateTime.now()).toString(), 'a'));
+                                    addNote();
                                   })
                             ],
                           ),
@@ -133,13 +130,13 @@ class _NotesFState extends State<NotesF> {
                     Expanded(
                       child: Container(
                         child: ListView.builder(
-                            itemCount: allList.length,
+                            itemCount: qus.documents.length,
                             itemBuilder: (BuildContext context, position) {
                               Divider(
                                 thickness: 4,
                                 color: Colors.red,
                               );
-                              return SizedBox(
+                              return showListNotes? SizedBox(
                                 child: Padding(
                                   padding: EdgeInsets.all(1),
                                     child: Padding(
@@ -151,7 +148,7 @@ class _NotesFState extends State<NotesF> {
                                           title: Padding(
                                             padding: EdgeInsets.only(top:3,bottom: 6),
                                             child: Text(
-                                              allList[position].name,
+                                              qus.documents[position]['Note'],
                                               textAlign: TextAlign.right,
                                               style: TextStyle(
                                                   color: Colors.black,
@@ -162,7 +159,7 @@ class _NotesFState extends State<NotesF> {
                                             ),
                                           ),
                                           subtitle: Text(
-                                            '${allList[position].time} الوقت',
+                                            '${qus.documents[position]['time']} الوقت',
                                             textAlign: TextAlign.center,
                                             style: TextStyle(
                                                 fontSize: 14,
@@ -170,12 +167,7 @@ class _NotesFState extends State<NotesF> {
                                           ),
                                           leading: InkWell(
                                             onLongPress: (){
-                                              deleteNote(allList[position].id);
-                                              allList.removeAt(position);
-                                              setState(() {
-                                                allList = allList;
-                                              });
-
+                                              deleteNote(position);
                                             },
                                             child: IconButton(
                                                 icon: Icon(
@@ -183,7 +175,7 @@ class _NotesFState extends State<NotesF> {
                                                   color: Colors.red,
                                                 ),alignment: Alignment(-5, 4),
                                                 onPressed: () {
-                                                  ShowMessage2();
+                                                  showMessage2();
                                                 }),
                                           ),
                                         ),
@@ -191,7 +183,7 @@ class _NotesFState extends State<NotesF> {
                                     ),
 
                                 ),
-                              );
+                              ):Container();
                             }),
                       ),
                     ),
@@ -207,33 +199,44 @@ class _NotesFState extends State<NotesF> {
   void dispose() {
     // TODO: implement dispose
     super.dispose();
-    _streamSubscription.cancel();
   }
 
-  var noteReference = FirebaseDatabase.instance.reference();
+  void addNote() {
+    Firestore.instance.collection('Notes:$tabelNameSet').document().setData({
+      'UserName': tabelNameSet,
+      'time': DateFormat('yyyy-MM-dd-HH:mm').format(DateTime.now()),
+      'zoneName':nameZoneSet,
+      'Note':txtNotes.text.toLowerCase().trimLeft()
 
-  DatabaseReference getYomReference() {
-    noteReference = noteReference.root();
-    return noteReference;
+    });
+    Timer(Duration(milliseconds: 300),(){
+      txtNotes.clear();
+      getDocumentValue();
+    });
   }
 
-  void addYom(NotesModel notesModel) {
-    noteReference = getYomReference();
-    noteReference.child('Notes:$tabelNameSet').push().set(notesModel.toSnapShot());
-  }
-
-  ShowMessage2() {
+  showMessage2() {
     Fluttertoast.showToast(
         msg: 'اظغط بإستمرار للحذف',
         gravity: ToastGravity.CENTER,
         toastLength: Toast.LENGTH_LONG,
         backgroundColor: Colors.blue,
-        fontSize: 28,
+        fontSize: 18,
         textColor: Colors.white);
   }
 
-  void deleteNote(String id) {
-    noteReference = getYomReference();
-    noteReference.child('Notes:$tabelNameSet').child(id).remove();
+  void deleteNote(int position) {
+    setState(() {
+      Firestore.instance.collection(
+          'Notes:$tabelNameSet')
+          .document(
+          qus.documents[position]
+              .documentID)
+          .delete().catchError((e) {
+        print(e);
+      });
+      qus = qus;
+      getDocumentValue();
+    });
   }
 }

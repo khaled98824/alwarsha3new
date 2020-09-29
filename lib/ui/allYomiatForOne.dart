@@ -78,7 +78,7 @@ class _allYomiatForOneState extends State<allYomiatForOneF> {
   Future getDocumentValue() async {
     DocumentReference documentRef = Firestore.instance.collection(
         'Yomiat:$tabelNameSet').document();
-    yomiatList = await documentRef.get();
+    usersList = await documentRef.get();
 
     var firestore = Firestore.instance;
     qus = await firestore.collection('Yomiat:$tabelNameSet').where(

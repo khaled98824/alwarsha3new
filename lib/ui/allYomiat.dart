@@ -44,12 +44,10 @@ class _YomiatFState extends State<YomiatF> with WidgetsBindingObserver {
     sumYomiatF();
   }
 
-  List<dynamic> allList;
-
   Future getDocumentValue() async {
     DocumentReference documentRef = Firestore.instance.collection(
         'Yomiat:$tabelNameSet').document();
-    yomiatList = await documentRef.get();
+    usersList = await documentRef.get();
 
     var firestore = Firestore.instance;
     qus = await firestore.collection('Yomiat:$tabelNameSet').where(

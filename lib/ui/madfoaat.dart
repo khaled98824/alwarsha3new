@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:alwarsha3/models/StaticVirables.dart';
 import 'package:alwarsha3/models/massrofatModel.dart';
 import 'package:alwarsha3/ui/enterName.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -62,7 +63,7 @@ class _MassrofatFState extends State<MassrofatF> {
               title: Text(
                 'المدفوعات',
                 style: TextStyle(
-                    fontSize: 42, fontFamily: 'AmiriQuran', height: 1),
+                    fontSize: 28, fontFamily: 'AmiriQuran', height: 1),
               ),
             ),
             body: ListView(
@@ -83,7 +84,7 @@ class _MassrofatFState extends State<MassrofatF> {
                       Padding(padding: EdgeInsets.only(top: 30)),
                       Container(
                         width: 320,
-                        height: 90,
+                        height: 80,
                         decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(20),
                             color: Colors.white),
@@ -91,7 +92,7 @@ class _MassrofatFState extends State<MassrofatF> {
                           child: Text('للقيام بتسجيل دفعة قم بإدخال إسم المستلم ثم قيمة الدفعة واظغط على زر سجل',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                                fontSize: 20, fontFamily: 'AmiriQuran', height: 1.5
+                                fontSize: 18, fontFamily: 'AmiriQuran', height: 1.5
                             ),
                           ),
                         ),
@@ -302,13 +303,8 @@ class _MassrofatFState extends State<MassrofatF> {
                                   onPressed: () {
 
                                     if (nameText.isNotEmpty && amountTextController.text !='') {
-                                      amount = double.parse(amountText)+0.010;
-                                      addYom(MassrofatModel(
-                                          '',
-                                          nameTextController.text,
-                                          DateFormat('yyyy-MM-dd-HH:mm').format(DateTime.now()).toString(),
-                                          amount,
-                                          'normal'));
+                                      amount = double.parse(amountText);
+                                      addYom();
                                     }else{
                                       ShowMessage2();
                                     }
@@ -325,7 +321,7 @@ class _MassrofatFState extends State<MassrofatF> {
                         } ,
                         child: Container(
                           width: 130,
-                          height: 50,
+                          height: 45,
                           decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(10),
                               color: Colors.blue
@@ -335,7 +331,7 @@ class _MassrofatFState extends State<MassrofatF> {
                               style:
                               TextStyle(
                                   color: Colors.white,
-                                  fontSize: 22,
+                                  fontSize: 21,
                                   fontFamily: 'AmiriQuran',
                                   height: 1
                               ),
@@ -367,8 +363,18 @@ class _MassrofatFState extends State<MassrofatF> {
         gravity: ToastGravity.TOP,
         toastLength: Toast.LENGTH_LONG,
         backgroundColor: Colors.blue,
-        fontSize: 28,
+        fontSize: 22,
         textColor: Colors.white,
+
+    );
+  }
+  ShowMessage1(){
+    Fluttertoast.showToast(msg: 'تم تسجيل الدفعة',
+      gravity: ToastGravity.TOP,
+      toastLength: Toast.LENGTH_LONG,
+      backgroundColor: Colors.blue,
+      fontSize: 22,
+      textColor: Colors.white,
 
     );
   }
@@ -380,12 +386,19 @@ class _MassrofatFState extends State<MassrofatF> {
     return massrofReference;
   }
 
-  void addYom(MassrofatModel massrofModel) {
-    massrofReference = getMassrofReference();
-    massrofReference
-        .child('madfoaat:$tabelNameSet')
-        .push()
-        .set(massrofModel.toSnapShot());
+  void addYom() {
+    Firestore.instance.collection('Madfoaat:$tabelNameSet').document().setData({
+      'UserName': tabelNameSet,
+      'time': DateFormat('yyyy-MM-dd-HH:mm').format(DateTime.now()),
+      'amount':amount,
+      'name': nameTextController.text
+
+    });
+    Timer(Duration(milliseconds: 300),(){
+      nameTextController.clear();
+      amountTextController.clear();
+      ShowMessage1();
+    });
   }
 
 

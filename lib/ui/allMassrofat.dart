@@ -5,10 +5,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/rendering.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:alwarsha3/models/StaticVirables.dart';
-import 'allYomiat.dart';
 import 'enterName.dart';
 
 class ShowAllMassrofat extends StatelessWidget {
@@ -30,31 +28,19 @@ bool showListMassrofat = false;
 QuerySnapshot qus ;
 
 class _MassrofatFState extends State<MassrofatF> {
-  TextEditingController nameTextController = TextEditingController();
-  StreamSubscription<Event> _streamSubscription;
-  TextEditingController searchTextController = TextEditingController();
-
-
   DateTime time;
-
-  String info = '';
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     getDocumentValue();
-    Timer(Duration(milliseconds: 300),(){
-      //searchYom(nameZoneSet);
-    });
-    Timer(Duration(milliseconds: 500),(){
-     // sumMassrofatF();
-    });
+    sumMassrofatF();
   }
 
   Future getDocumentValue() async {
     DocumentReference documentRef = Firestore.instance.collection(
         'Massrofat:$tabelNameSet').document();
-    yomiatList = await documentRef.get();
+    usersList = await documentRef.get();
 
     var firestore = Firestore.instance;
     qus = await firestore.collection('Massrofat:$tabelNameSet').getDocuments();
@@ -68,11 +54,11 @@ class _MassrofatFState extends State<MassrofatF> {
   }
 
   sumMassrofatF(){
-    sumMassrofat = 0;
-    Timer(Duration(milliseconds: 400),(){
+    sumMassrofat = 0.0;
+    Timer(Duration(microseconds: 600),(){
       for(int i =0 ; i < qus.documents.length ; i++){
         setState(() {
-          sumMassrofat = sumMassrofat.toDouble() +  qus.documents[i]['statues'] ;
+          sumMassrofat = sumMassrofat.toDouble() +  qus.documents[i]['amount'] ;
         });
       }
     });
@@ -91,7 +77,7 @@ class _MassrofatFState extends State<MassrofatF> {
               title: Text(
                 'سجل كل المصروفات اليومية',
                 style: TextStyle(
-                    fontSize: 26, fontFamily: 'AmiriQuran', height: 1),
+                    fontSize: 22, fontFamily: 'AmiriQuran', height: 1),
               ),
             ),
             body: showListMassrofat?Container(
@@ -112,7 +98,7 @@ class _MassrofatFState extends State<MassrofatF> {
                     Padding(padding: EdgeInsets.only(top: 30)),
                     Container(
                       child: Center(
-                        child: Text(' مجموع قيمة المصروفات : ${sumMassrofat.toStringAsFixed(3)}',style: TextStyle(
+                        child: Text(' مجموع قيمة المصروفات : ${sumMassrofat.toString()}',style: TextStyle(
                             fontSize: 20,
                             fontFamily: 'AmiriQuran',
                             height: 1,
@@ -171,6 +157,7 @@ class _MassrofatFState extends State<MassrofatF> {
                                           qus = qus;
                                           getDocumentValue();
                                         });
+                                        sumMassrofatF();
                                       },
                                       child: IconButton(
                                           icon: Icon(
@@ -206,22 +193,9 @@ class _MassrofatFState extends State<MassrofatF> {
         gravity: ToastGravity.CENTER,
         toastLength: Toast.LENGTH_LONG,
         backgroundColor: Colors.blue,
-        fontSize: 28,
+        fontSize: 22,
         textColor: Colors.white
     );
-  }
-
-  var massrofReference = FirebaseDatabase.instance.reference();
-
-  DatabaseReference getYomReference() {
-    massrofReference = massrofReference.root();
-    return massrofReference;
-  }
-
-  void deleteYom(String id) {
-    massrofReference = getYomReference();
-    massrofReference.child('massrofat:$tabelNameSet').child(id).remove();
-    sumMassrofatF();
   }
   }
 

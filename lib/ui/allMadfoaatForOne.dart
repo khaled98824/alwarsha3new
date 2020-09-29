@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:alwarsha3/models/massrofatModel.dart';
 import 'package:alwarsha3/ui/enterName.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/rendering.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:device_info/device_info.dart';
@@ -9,7 +10,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:alwarsha3/models/StaticVirables.dart';
+import 'PageRoute.dart';
 import 'allMadfoaat.dart';
+import 'allYomiat.dart';
 
 class allMadfoaatForOne extends StatelessWidget {
   @override
@@ -22,17 +25,13 @@ class allMadfoaatForOneF extends StatefulWidget {
   @override
   _allMadfoaatForOneState createState() => _allMadfoaatForOneState();
 }
-
-String tabelName;
-double sumMassrofat = 0.0;
-
+double sumMadfoaat = 0.0;
+bool showListMadfoaat=false;
+QuerySnapshot qusMadfoaat ;
 class _allMadfoaatForOneState extends State<allMadfoaatForOneF> {
-  TextEditingController nameTextController = TextEditingController();
-  StreamSubscription<Event> _streamSubscription;
-  TextEditingController searchTextController = TextEditingController();
-
   DateTime time;
   final GlobalKey<ScaffoldState> _globalKey = GlobalKey<ScaffoldState>();
+  
   _showSnackBarDelete() {
     final snackBar = SnackBar(
       content: Text('اظغط على "تأكيد" لأتمام الحذف'),
@@ -45,14 +44,14 @@ class _allMadfoaatForOneState extends State<allMadfoaatForOneF> {
         disabledTextColor: Colors.blue,
         onPressed: () {
           int i = 0;
-          while (allList.length > i) {
-            deleteAllYom(allList[i].id);
+          while (qusMadfoaat.documents.length > i) {
+            deleteAllYom(qusMadfoaat.documents[i].documentID);
             i++;
           }
-          allList.clear();
+          qusMadfoaat.documents.clear();
           sumMadfoaatF();
           setState(() {
-            allList = allList;
+            qusMadfoaat = qusMadfoaat;
           });
           ShowMessage();
         },
@@ -65,43 +64,41 @@ class _allMadfoaatForOneState extends State<allMadfoaatForOneF> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    _streamSubscription = massrofReference
-        .child('madfoaat:$tabelNameSet')
-        .onChildAdded
-        .listen(_onChildAdd);
-
-    Timer(Duration(milliseconds: 400), () {
-      searchYom(serchNameMadfoaat);
-      sumMadfoaatF();
-    });
+    print(serchNameMadfoaat);
+    getDocumentValue();
+   
   }
+  Future getDocumentValue() async {
+    DocumentReference documentRef = Firestore.instance.collection(
+        'Madfoaat:$tabelNameSet').document();
+    usersList = await documentRef.get();
 
-  List<MassrofatModel> searchList = List();
-
-  List<MassrofatModel> allList = List();
-  void _onChildAdd(Event event) {
-    MassrofatModel massrofat = MassrofatModel.FromSnapShot(event.snapshot);
-
+    var firestore = Firestore.instance;
+    qusMadfoaat = await firestore.collection('Madfoaat:$tabelNameSet').where('name',isEqualTo: serchNameMadfoaat).getDocuments();
     setState(() {
-      allList.add(massrofat);
+      showListMadfoaat = true;
     });
+    print(nameZoneSet);
+    print(tabelNameSet);
+    sumMadfoaatF();
+    return qusMadfoaat.documents;
   }
 
   sumMadfoaatF() {
-    sumMassrofat = 0;
+    sumMadfoaat = 0;
     Timer(Duration(milliseconds: 100), () {
-      for (int i = 0; i < searchList.length; i++) {
+      for (int i = 0; i < qusMadfoaat.documents.length; i++) {
         setState(() {
-          sumMassrofat =
-              sumMassrofat.toDouble() + searchList[i].statues - 0.010;
+          sumMadfoaat = sumMadfoaat.toDouble() + qusMadfoaat.documents[i]['amount'];
         });
       }
     });
   }
 
+ 
+
   @override
   Widget build(BuildContext context) {
-    Virables.table = tabelName;
     return SafeArea(
         child: Scaffold(
             key: _globalKey,
@@ -114,7 +111,7 @@ class _allMadfoaatForOneState extends State<allMadfoaatForOneF> {
                     Text(
                       '$serchNameMadfoaat',
                       style: TextStyle(
-                          fontSize: 32,
+                          fontSize: 22,
                           fontFamily: 'AmiriQuran',
                           height: 1,
                           color: Colors.black),
@@ -122,11 +119,24 @@ class _allMadfoaatForOneState extends State<allMadfoaatForOneF> {
                     Text(
                       '  كل الدفعات ل',
                       style: TextStyle(
-                          fontSize: 32, fontFamily: 'AmiriQuran', height: 1),
+                          fontSize: 22, fontFamily: 'AmiriQuran', height: 1),
                     ),
                   ],
-                )),
-            body: Container(
+                ),
+              leading: InkWell(
+                  onTap: () {
+                    setState(() {
+                      if (qusMadfoaat != null) {
+                        qusMadfoaat.documents.clear();
+                      }
+                    });
+                    Navigator.pushReplacement(context, BouncyPageRoute(widget: ShowAllMadfoaat()));
+                    // Navigator.of(context).pop();
+                  },
+                  child: Icon(
+                    Icons.arrow_back_ios, color: Colors.white, size: 26,)),
+            ),
+            body:showListMadfoaat? Container(
                 width: MediaQuery.of(context).size.width,
                 height: MediaQuery.of(context).size.height,
                 decoration: BoxDecoration(
@@ -145,11 +155,11 @@ class _allMadfoaatForOneState extends State<allMadfoaatForOneF> {
                     Container(
                       child: Center(
                         child: Text(
-                          ' مجموع قيمة المدفوعات : ${sumMassrofat.toStringAsFixed(3)}',
+                          ' مجموع قيمة المدفوعات : ${sumMadfoaat.toStringAsFixed(3)}',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                               color: Colors.white,
-                              fontSize: 24,
+                              fontSize: 22,
                               fontFamily: 'AmiriQuran'),
                         ),
                       ),
@@ -175,7 +185,7 @@ class _allMadfoaatForOneState extends State<allMadfoaatForOneF> {
                                     'لحذف الكل اظغط مطولاً',
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
-                                        fontSize: 16,
+                                        fontSize: 15,
                                         fontFamily: 'AmiriQuran',
                                         height: 1,
                                         color: Colors.white),
@@ -196,7 +206,7 @@ class _allMadfoaatForOneState extends State<allMadfoaatForOneF> {
                     Expanded(
                       child: Container(
                         child: ListView.builder(
-                            itemCount: allList.length,
+                            itemCount: qusMadfoaat.documents.length,
                             itemBuilder: (BuildContext context, position) {
                               Divider(
                                 height: 1,
@@ -204,31 +214,27 @@ class _allMadfoaatForOneState extends State<allMadfoaatForOneF> {
                                 color: Colors.red,
                               );
                               return SizedBox(
-                                  height: 69,
+                                  height: 65,
                                   child: Card(
                                     child: ListTile(
                                       title: Text(
-                                        allList[position].name,
+                                        qusMadfoaat.documents[position]['name'],
                                         textAlign: TextAlign.center,
                                         style: TextStyle(
                                             color: Colors.black,
-                                            fontSize: 20,
+                                            fontSize: 18,
                                             fontFamily: 'AmiriQuran',
                                             height: 1.5),
                                       ),
                                       subtitle: Text(
-                                        '${allList[position].time}الوقت ',
+                                        '${qusMadfoaat.documents[position]['time']}الوقت ',
                                         style: TextStyle(
-                                            fontSize: 15,
+                                            fontSize: 14,
                                             color: Colors.green[900]),
                                       ),
                                       leading: InkWell(
                                         onLongPress: () {
-                                          deleteYom(allList[position].id);
-                                          allList.removeAt(position);
-                                          setState(() {
-                                            allList = allList;
-                                          });
+                                         deleteYom(position);
                                         },
                                         child: IconButton(
                                             icon: Icon(
@@ -239,16 +245,10 @@ class _allMadfoaatForOneState extends State<allMadfoaatForOneF> {
                                               ShowMessage3();
                                             }),
                                       ),
-                                      trailing: allList[position].statues ==
-                                              2.01
-                                          ? Text('2',textAlign:TextAlign.center,
-                                          style: TextStyle(
-                                        fontSize: 20
-                                      ),)
-                                          : Text(
-                                              '${allList[position].statues - 0.010}',textAlign: TextAlign.center,
+                                      trailing:  Text(
+                                              '${qusMadfoaat.documents[position]['amount']}',textAlign: TextAlign.center,
                                       style: TextStyle(
-                                        fontSize: 20
+                                        fontSize: 18
                                       ),),
                                     ),
                                   ));
@@ -256,15 +256,16 @@ class _allMadfoaatForOneState extends State<allMadfoaatForOneF> {
                       ),
                     ),
                   ],
-                ))));
+                )):Container(),
+        ),
+    );
   }
 
   @override
   void dispose() {
     // TODO: implement dispose
     super.dispose();
-    _streamSubscription.cancel();
-    sumMassrofat = 0.0;
+    sumMadfoaat = 0.0;
   }
 
   ShowMessage() {
@@ -273,7 +274,7 @@ class _allMadfoaatForOneState extends State<allMadfoaatForOneF> {
         gravity: ToastGravity.CENTER,
         toastLength: Toast.LENGTH_LONG,
         backgroundColor: Colors.grey,
-        fontSize: 28,
+        fontSize: 22,
         textColor: Colors.white);
   }
 
@@ -283,7 +284,7 @@ class _allMadfoaatForOneState extends State<allMadfoaatForOneF> {
         gravity: ToastGravity.CENTER,
         toastLength: Toast.LENGTH_LONG,
         backgroundColor: Colors.blue,
-        fontSize: 28,
+        fontSize: 22,
         textColor: Colors.white);
   }
 
@@ -293,7 +294,7 @@ class _allMadfoaatForOneState extends State<allMadfoaatForOneF> {
         gravity: ToastGravity.CENTER,
         toastLength: Toast.LENGTH_LONG,
         backgroundColor: Colors.blue,
-        fontSize: 28,
+        fontSize: 22,
         textColor: Colors.white);
   }
 
@@ -325,38 +326,24 @@ class _allMadfoaatForOneState extends State<allMadfoaatForOneF> {
     });
   }
 
-  void deleteYom(String id) {
-    massrofReference = getYomReference();
-    massrofReference.child('madfoaat:$tabelNameSet').child(id).remove();
+  void deleteYom(int position) {
+    setState(() {
+      Firestore.instance.collection(
+          'Madfoaat:$tabelNameSet')
+          .document(
+          qusMadfoaat.documents[position]
+              .documentID)
+          .delete().catchError((e) {
+        print(e);
+      });
+      qusMadfoaat = qusMadfoaat;
+      getDocumentValue();
+    });
     sumMadfoaatF();
   }
 
   void deleteAllYom(String id) {
-    massrofReference = getYomReference();
-    massrofReference.child('madfoaat:$tabelNameSet').child(id).remove();
+
     sumMadfoaatF();
-  }
-
-  void searchYom(String searchStatment) {
-    searchList.clear();
-    setState(() {
-      allList = searchList;
-    });
-    Query query = massrofReference
-        .child('madfoaat:$tabelNameSet')
-        .orderByChild('name')
-        .equalTo(searchStatment.trim());
-
-    query.once().then((snapshot) {
-      String name, time, description;
-      double amount;
-      snapshot.value.forEach((key, value) {
-        name = value['name'].toString().trim();
-        time = value['time'].toString().trim();
-        amount = value['amount'];
-        description = value['description'].toString().trim();
-        searchList.add(MassrofatModel(key, name, time, amount, description));
-      });
-    });
   }
 }
