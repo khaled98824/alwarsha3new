@@ -34,7 +34,10 @@ class _MassrofatFState extends State<MassrofatF> {
     // TODO: implement initState
     super.initState();
     getDocumentValue();
-    sumMassrofatF();
+    Timer(Duration(milliseconds: 500), (){
+      sumMassrofatF();
+    });
+
   }
 
   Future getDocumentValue() async {
@@ -43,7 +46,7 @@ class _MassrofatFState extends State<MassrofatF> {
     usersList = await documentRef.get();
 
     var firestore = Firestore.instance;
-    qus = await firestore.collection('Massrofat:$tabelNameSet').getDocuments();
+    qus = await firestore.collection('Massrofat:$tabelNameSet').where('zoneName',isEqualTo: nameZoneSet).getDocuments();
     setState(() {
       showListMassrofat = true;
     });
@@ -54,15 +57,14 @@ class _MassrofatFState extends State<MassrofatF> {
   }
 
   sumMassrofatF(){
-    sumMassrofat = 0.0;
-    Timer(Duration(microseconds: 600),(){
+    if(qus!=null){
+      sumMassrofat = 0.0;
       for(int i =0 ; i < qus.documents.length ; i++){
         setState(() {
           sumMassrofat = sumMassrofat.toDouble() +  qus.documents[i]['amount'] ;
         });
       }
-    });
-
+    }
   }
 
   @override
@@ -84,14 +86,7 @@ class _MassrofatFState extends State<MassrofatF> {
                 width: MediaQuery.of(context).size.width,
                 height: MediaQuery.of(context).size.height,
                 decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                        colors: [
-                          Color(0xFF1b1e44),
-                          Color(0xFF2d3447),
-                        ],
-                        begin: Alignment.bottomCenter,
-                        end: Alignment.topCenter,
-                        tileMode: TileMode.clamp)),
+                  color: Color(0xFF1b1e44),),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: <Widget>[

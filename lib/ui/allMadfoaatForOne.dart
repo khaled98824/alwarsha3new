@@ -1,18 +1,14 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:alwarsha3/models/massrofatModel.dart';
 import 'package:alwarsha3/ui/enterName.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/rendering.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:device_info/device_info.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:alwarsha3/models/StaticVirables.dart';
 import 'PageRoute.dart';
 import 'allMadfoaat.dart';
-import 'allYomiat.dart';
 
 class allMadfoaatForOne extends StatelessWidget {
   @override
@@ -69,12 +65,8 @@ class _allMadfoaatForOneState extends State<allMadfoaatForOneF> {
    
   }
   Future getDocumentValue() async {
-    DocumentReference documentRef = Firestore.instance.collection(
-        'Madfoaat:$tabelNameSet').document();
-    usersList = await documentRef.get();
-
     var firestore = Firestore.instance;
-    qusMadfoaat = await firestore.collection('Madfoaat:$tabelNameSet').where('name',isEqualTo: serchNameMadfoaat).getDocuments();
+    qusMadfoaat = await firestore.collection('Madfoaat:$tabelNameSet').where('zoneName',isEqualTo: nameZoneSet).where('name',isEqualTo: serchNameMadfoaat).getDocuments();
     setState(() {
       showListMadfoaat = true;
     });
@@ -119,7 +111,7 @@ class _allMadfoaatForOneState extends State<allMadfoaatForOneF> {
                     Text(
                       '  كل الدفعات ل',
                       style: TextStyle(
-                          fontSize: 22, fontFamily: 'AmiriQuran', height: 1),
+                          fontSize: 20, fontFamily: 'AmiriQuran', height: 1),
                     ),
                   ],
                 ),
@@ -140,14 +132,7 @@ class _allMadfoaatForOneState extends State<allMadfoaatForOneF> {
                 width: MediaQuery.of(context).size.width,
                 height: MediaQuery.of(context).size.height,
                 decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                        colors: [
-                      Color(0xFF1b1e44),
-                      Color(0xFF2d3447),
-                    ],
-                        begin: Alignment.bottomCenter,
-                        end: Alignment.topCenter,
-                        tileMode: TileMode.clamp)),
+                  color: Color(0xFF1b1e44),),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: <Widget>[

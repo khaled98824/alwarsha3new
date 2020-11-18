@@ -78,7 +78,7 @@ class _YomiatFState extends State<YomiatF> {
               title: Text(
                 'اليوميات',
                 style: TextStyle(
-                    fontSize: 38, fontFamily: 'AmiriQuran', height: 1),
+                    fontSize: 29, fontFamily: 'AmiriQuran', height: 1),
               ),
             ),
             body: Form(
@@ -88,14 +88,7 @@ class _YomiatFState extends State<YomiatF> {
                     width: MediaQuery.of(context).size.width,
                     height: MediaQuery.of(context).size.height,
                     decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                            colors: [
-                          Color(0xFF1b1e44),
-                          Color(0xFF2d3447),
-                        ],
-                            begin: Alignment.bottomCenter,
-                            end: Alignment.topCenter,
-                            tileMode: TileMode.clamp)),
+                      color: Color(0xFF1b1e44),),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: <Widget>[
@@ -155,11 +148,11 @@ class _YomiatFState extends State<YomiatF> {
                             children: <Widget>[
                               Container(
                                 width: 340,
-                                height: 114,
+                                height: 80,
                                 padding:
-                                    EdgeInsets.only(left: 10, right: 7, top: 7),
+                                    EdgeInsets.only(left: 10, right: 7, top: 15),
                                 decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(20),
+                                    borderRadius: BorderRadius.circular(5),
                                     color: Colors.white),
                                 child: Column(
                                   children: <Widget>[
@@ -170,39 +163,40 @@ class _YomiatFState extends State<YomiatF> {
                                       children: <Widget>[
                                         SizedBox(
                                           width: 230,
-                                          height: 50,
-                                          child: Card(
-                                            child: Padding(
-                                              padding: EdgeInsets.only(
-                                                  right: 10,
-                                                  left: 10,
-                                                  bottom: 1,
-                                                  top: 1),
-                                              child: TextFormField(
-                                                // ignore: missing_return
-                                                validator: (String value) {
-                                                  if (value.isEmpty) {
-                                                    return 'Please enter principal amount';
-                                                  }
-                                                },
-                                                maxLines: 2,
-                                                controller: nameTextController,
-                                                textAlign: TextAlign.right,
-                                                decoration: InputDecoration(
-                                                  enabledBorder: OutlineInputBorder(
-                                                      borderSide: BorderSide(
-                                                          color: Colors.blueAccent),
-                                                      borderRadius:
-                                                      BorderRadius.circular(
-                                                          20)),
-                                                  alignLabelWithHint: true,
-                                                  hintText:
-                                                  '!...أدخل إسم العامل هنا',
-                                                  fillColor: Colors.white,
-                                                  hoverColor: Colors.white,
+                                          height: 44,
+                                          child: Padding(
+                                            padding: EdgeInsets.only(
+                                                right: 10,
+                                                left: 10,
+                                                bottom: 1,
+                                                top: 1),
+                                            child: TextFormField(
+                                              // ignore: missing_return
+                                              validator: (String value) {
+                                                if (value.isEmpty) {
+                                                  return 'Please enter principal amount';
+                                                }
+                                              },
+                                              controller: nameTextController,
+                                              textAlign: TextAlign.right,
+                                              decoration: InputDecoration(
+                                                enabledBorder: OutlineInputBorder(
+                                                    borderSide: BorderSide(
+                                                        color: Colors.blueAccent),
+                                                    borderRadius:
+                                                    BorderRadius.circular(
+                                                        5)),
+                                                alignLabelWithHint: true,
+                                                hintText:
+                                                '!...أدخل إسم العامل هنا',
+                                                hintStyle: TextStyle(
+                                                  fontSize: 17,
+                                                  height: 1
                                                 ),
-                                                cursorRadius: Radius.circular(10),
+                                                fillColor: Colors.white,
+                                                hoverColor: Colors.white,
                                               ),
+                                              cursorRadius: Radius.circular(10),
                                             ),
                                           ),
                                         ),
@@ -237,55 +231,55 @@ class _YomiatFState extends State<YomiatF> {
                                         ),
                                       ],
                                     ),
-                                    Container(
-                                      child: Wrap(
-                                        crossAxisAlignment: WrapCrossAlignment.center,
-                                        children: <Widget>[
-
-                                          DropdownButton<String>(
-                                            iconSize: 30,
-                                              style:TextStyle(color: Colors.red),
-                                              items: dropItems.map((String selectItem){
-                                                return DropdownMenuItem(
-                                                    value: selectItem,
-                                                    child: Text(selectItem)
-                                                );
-                                              }
-                                              ).toList(),
-                                              isExpanded: false,
-                                              dropdownColor: Colors.blue[50],
-                                              iconEnabledColor: Colors.red,
-                                              icon: Icon(Icons.menu),
-                                              onChanged: (String theDate){
-                                                setState(() {
-                                                  dropSelectItem = theDate;
-                                                  if(theDate =='إلتقاط تاريخ اليوم تلقائياً'){
-                                                  }else{
-                                                    showDatePicker(
-                                                        context: context,
-                                                        initialDate: DateTime.now(),
-                                                        firstDate: DateTime(2020),
-                                                        lastDate: DateTime(2222)
-                                                    ).then((date){
-                                                      setState(() {
-                                                        time = DateFormat('yyyy-MM-dd-HH:mm').format(date).toString();
-                                                      });
-                                                    });
-                                                  }
-                                                }
-                                                );
-                                              },
-                                            value: dropSelectItem,
-                                            elevation: 7,
-                                          ),
-                                          Text('تحديد التاريخ :',textAlign: TextAlign.center,
-                                            style: TextStyle(
-
-                                            )
-                                            ,),
-                                        ],
-                                      ),
-                                    ),
+                                    // Container(
+                                    //   child: Wrap(
+                                    //     crossAxisAlignment: WrapCrossAlignment.center,
+                                    //     children: <Widget>[
+                                    //
+                                    //       DropdownButton<String>(
+                                    //         iconSize: 30,
+                                    //           style:TextStyle(color: Colors.red),
+                                    //           items: dropItems.map((String selectItem){
+                                    //             return DropdownMenuItem(
+                                    //                 value: selectItem,
+                                    //                 child: Text(selectItem)
+                                    //             );
+                                    //           }
+                                    //           ).toList(),
+                                    //           isExpanded: false,
+                                    //           dropdownColor: Colors.blue[50],
+                                    //           iconEnabledColor: Colors.red,
+                                    //           icon: Icon(Icons.menu),
+                                    //           onChanged: (String theDate){
+                                    //             setState(() {
+                                    //               dropSelectItem = theDate;
+                                    //               if(theDate =='إلتقاط تاريخ اليوم تلقائياً'){
+                                    //               }else{
+                                    //                 showDatePicker(
+                                    //                     context: context,
+                                    //                     initialDate: DateTime.now(),
+                                    //                     firstDate: DateTime(2020),
+                                    //                     lastDate: DateTime(2222)
+                                    //                 ).then((date){
+                                    //                   setState(() {
+                                    //                     time = DateFormat('yyyy-MM-dd-HH:mm').format(date).toString();
+                                    //                   });
+                                    //                 });
+                                    //               }
+                                    //             }
+                                    //             );
+                                    //           },
+                                    //         value: dropSelectItem,
+                                    //         elevation: 7,
+                                    //       ),
+                                    //       Text('تحديد التاريخ :',textAlign: TextAlign.center,
+                                    //         style: TextStyle(
+                                    //
+                                    //         )
+                                    //         ,),
+                                    //     ],
+                                    //   ),
+                                    // ),
                                   ],
 
                                 ),
@@ -400,11 +394,11 @@ class _YomiatFState extends State<YomiatF> {
     );
   }
   ShowMessage3(){
-    Fluttertoast.showToast(msg: 'تم تسجيل اليوميةً',
+    Fluttertoast.showToast(msg: 'تم تسجيل اليومية',
         gravity: ToastGravity.BOTTOM,
         toastLength: Toast.LENGTH_LONG,
         backgroundColor: Colors.blue,
-        fontSize: 28,
+        fontSize: 22,
         textColor: Colors.white
     );
   }
@@ -428,6 +422,15 @@ class _YomiatFState extends State<YomiatF> {
     Timer(Duration(milliseconds: 300),(){
       nameTextController.clear();
       ShowMessage3();
+    });
+
+    Firestore.instance.collection('Yomiat2:$tabelNameSet').document().setData({
+      'UserName': tabelNameSet,
+      'time': DateFormat('yyyy-MM-dd-HH:mm').format(DateTime.now()),
+      'status': status,
+      'zoneName':nameZoneSet,
+      'name': nameTextController.text
+
     });
   }
 }

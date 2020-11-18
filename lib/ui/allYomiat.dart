@@ -1,16 +1,13 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/rendering.dart';
+//import 'package:flutter/rendering.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'PageRoute.dart';
 import 'allYomiatForOne.dart';
 import 'package:alwarsha3/models/StaticVirables.dart';
-import 'package:alwarsha3/models/yomiatModel.dart';
 
 import 'enterName.dart';
 
@@ -41,14 +38,13 @@ class _YomiatFState extends State<YomiatF> with WidgetsBindingObserver {
     // TODO: implement initState
     super.initState();
     getDocumentValue();
-    sumYomiatF();
+    Timer(Duration(milliseconds: 600),(){
+      sumYomiatF();
+    });
+
   }
 
   Future getDocumentValue() async {
-    DocumentReference documentRef = Firestore.instance.collection(
-        'Yomiat:$tabelNameSet').document();
-    usersList = await documentRef.get();
-
     var firestore = Firestore.instance;
     qus = await firestore.collection('Yomiat:$tabelNameSet').where(
         'zoneName', isEqualTo: nameZoneSet).getDocuments();
@@ -61,18 +57,18 @@ class _YomiatFState extends State<YomiatF> with WidgetsBindingObserver {
   }
 
   double sumYomiat = 0.0;
-
   sumYomiatF() {
-    sumYomiat = 0;
-    Timer(Duration(milliseconds: 200), () {
-      for (int i = 0; i < qus.documents.length; i++) {
-        setState(() {
-          sumYomiat = sumYomiat.toDouble() + qus.documents[i]['status']/2;
-        });
-      }
-    });
-  }
+    if(qus !=null){
+      sumYomiat = 0;
 
+        for (int i = 0; i < qus.documents.length; i++) {
+          setState(() {
+            sumYomiat = sumYomiat.toDouble() + qus.documents[i]['status']/2;
+          });
+        }
+    }
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -97,9 +93,9 @@ class _YomiatFState extends State<YomiatF> with WidgetsBindingObserver {
                     setState(() {
                       if (qus != null) {
                         qus.documents.clear();
+                        sumYomiat = 0.0;
                       }
                     });
-
                     Navigator.of(context).pop();
                   },
                   child: Icon(
@@ -115,14 +111,7 @@ class _YomiatFState extends State<YomiatF> with WidgetsBindingObserver {
                     .size
                     .height,
                 decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                        colors: [
-                          Color(0xFF1b1e44),
-                          Color(0xFF2d3447),
-                        ],
-                        begin: Alignment.bottomCenter,
-                        end: Alignment.topCenter,
-                        tileMode: TileMode.clamp)),
+                  color: Color(0xFF1b1e44),),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: <Widget>[
@@ -249,7 +238,13 @@ class _YomiatFState extends State<YomiatF> with WidgetsBindingObserver {
                                     ),
                                   ),
                                 );
-                              }) : Container();
+                              }) : Center(
+                            child: SpinKitFadingCircle(
+                              color: Colors.red,
+                              size: 70,
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
                         },
 
                       ),
@@ -262,6 +257,8 @@ class _YomiatFState extends State<YomiatF> with WidgetsBindingObserver {
   void dispose() {
     // TODO: implement dispose
     super.dispose();
+    qus.documents.clear();
+    sumYomiat =0.0;
   }
 
 

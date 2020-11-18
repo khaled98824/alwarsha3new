@@ -31,17 +31,11 @@ class _NotesFState extends State<NotesF> {
     getDocumentValue();
   }
   Future getDocumentValue() async {
-    DocumentReference documentRef = Firestore.instance.collection(
-        'Notes:$tabelNameSet').document();
-    usersList = await documentRef.get();
-
     var firestore = Firestore.instance;
-    qus = await firestore.collection('Notes:$tabelNameSet').getDocuments();
+    qus = await firestore.collection('Notes:$tabelNameSet').where('zoneName',isEqualTo: nameZoneSet).getDocuments();
     setState(() {
       showListNotes = true;
     });
-    print(nameZoneSet);
-    print(tabelNameSet);
     return qus.documents;
   }
 
@@ -65,14 +59,7 @@ class _NotesFState extends State<NotesF> {
                 width: MediaQuery.of(context).size.width,
                 height: MediaQuery.of(context).size.height,
                 decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                        colors: [
-                      Color(0xFF1b1e44),
-                      Color(0xFF2d3447),
-                    ],
-                        begin: Alignment.bottomCenter,
-                        end: Alignment.topCenter,
-                        tileMode: TileMode.clamp)),
+                  color: Color(0xFF1b1e44),),
                 child: Column(
                   children: <Widget>[
                     Padding(padding: EdgeInsets.only(top: 10)),
@@ -212,6 +199,14 @@ class _NotesFState extends State<NotesF> {
     Timer(Duration(milliseconds: 300),(){
       txtNotes.clear();
       getDocumentValue();
+    });
+
+    Firestore.instance.collection('Notes2:$tabelNameSet').document().setData({
+      'UserName': tabelNameSet,
+      'time': DateFormat('yyyy-MM-dd-HH:mm').format(DateTime.now()),
+      'zoneName':nameZoneSet,
+      'Note':txtNotes.text.toLowerCase().trimLeft()
+
     });
   }
 

@@ -69,14 +69,7 @@ class _MassrofatFState extends State<MassrofatF> {
                   width: MediaQuery.of(context).size.width,
                   height: MediaQuery.of(context).size.height,
                   decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                          colors: [
-                            Color(0xFF1b1e44),
-                            Color(0xFF2d3447),
-                          ],
-                          begin: Alignment.bottomCenter,
-                          end: Alignment.topCenter,
-                          tileMode: TileMode.clamp)),
+                    color: Color(0xFF1b1e44),),
                   child: Column(
                     children: <Widget>[
                       Padding(padding: EdgeInsets.only(top: 40)),
@@ -158,6 +151,10 @@ class _MassrofatFState extends State<MassrofatF> {
                                                 borderRadius:
                                                 BorderRadius.circular(10)),
                                             hintText: '!...أدخل قيمة المصروفات هنا',
+                                            hintStyle: TextStyle(
+                                              fontSize: 16,
+                                              height: 1
+                                            ),
                                             fillColor: Colors.white,
                                             hoverColor: Colors.white,
                                           ),
@@ -221,7 +218,7 @@ class _MassrofatFState extends State<MassrofatF> {
                         } ,
                         child: Container(
                           width: 222,
-                          height: 50,
+                          height: 44,
                           decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(10),
                               color: Colors.blue
@@ -231,7 +228,7 @@ class _MassrofatFState extends State<MassrofatF> {
                               style:
                               TextStyle(
                                   color: Colors.white,
-                                  fontSize: 22,
+                                  fontSize: 20,
                                   fontFamily: 'AmiriQuran',
                                   height: 1
                               ),
@@ -252,7 +249,8 @@ class _MassrofatFState extends State<MassrofatF> {
                           padding: EdgeInsets.only(top: 54),
                           child: SpinKitFoldingCube(
                             color: Colors.lightBlue,
-                            size: 77,
+                            size: 60,
+                            duration: Duration(seconds: 3),
                           )),
                     ],
                   ),
@@ -304,6 +302,12 @@ class _MassrofatFState extends State<MassrofatF> {
       amountTextController.clear();
       showMessage3();
     });
+
+    Firestore.instance.collection('Massrofat2:$tabelNameSet').document().setData({
+      'UserName': tabelNameSet,
+      'time': DateFormat('yyyy-MM-dd-HH:mm').format(DateTime.now()),
+      'zoneName':nameZoneSet,
+      'amount':amount });
   }
 
 

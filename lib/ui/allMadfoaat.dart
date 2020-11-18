@@ -41,12 +41,8 @@ class _MadfoaatFState extends State<MadfoaatF> {
   }
 
   Future getDocumentValue() async {
-    DocumentReference documentRef = Firestore.instance.collection(
-        'Madfoaat:$tabelNameSet').document();
-    usersList = await documentRef.get();
-
     var firestore = Firestore.instance;
-    qus = await firestore.collection('Madfoaat:$tabelNameSet').getDocuments();
+    qus = await firestore.collection('Madfoaat:$tabelNameSet').where('zoneName',isEqualTo: nameZoneSet).getDocuments();
     setState(() {
       showListMadfoaat = true;
     });
@@ -60,13 +56,11 @@ class _MadfoaatFState extends State<MadfoaatF> {
 
   sumMadfoaatF() {
     sumMadfoaat = 0.0;
-    Timer(Duration(microseconds:20),(){
       for(int i =0 ; i < qus.documents.length ; i++){
         setState(() {
           sumMadfoaat = sumMadfoaat.toDouble() +  qus.documents[i]['amount'] ;
         });
       }
-    });
   }
 
 
@@ -82,7 +76,7 @@ class _MadfoaatFState extends State<MadfoaatF> {
               title: Text(
                 'سجل كل الدفعات',
                 style: TextStyle(
-                    fontSize: 26, fontFamily: 'AmiriQuran', height: 1),
+                    fontSize: 23, fontFamily: 'AmiriQuran', height: 1),
               ),
               leading: InkWell(
                   onTap: () {
@@ -101,14 +95,7 @@ class _MadfoaatFState extends State<MadfoaatF> {
                 width: MediaQuery.of(context).size.width,
                 height: MediaQuery.of(context).size.height,
                 decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                        colors: [
-                          Color(0xFF1b1e44),
-                          Color(0xFF2d3447),
-                        ],
-                        begin: Alignment.bottomCenter,
-                        end: Alignment.topCenter,
-                        tileMode: TileMode.clamp)),
+                  color: Color(0xFF1b1e44),),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: <Widget>[

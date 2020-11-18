@@ -102,14 +102,7 @@ class _FrontBagefulState extends State<FrontBageful> {
     return Container(
       margin: EdgeInsets.only(bottom: 5),
       decoration: BoxDecoration(
-          gradient: LinearGradient(
-              colors: [
-            Color(0xFF1b1e44),
-            Color(0xFF2d3447),
-          ],
-              begin: Alignment.bottomCenter,
-              end: Alignment.topCenter,
-              tileMode: TileMode.clamp)),
+          color: Color(0xFF1b1e44),),
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: Stack(
@@ -143,23 +136,17 @@ class _FrontBagefulState extends State<FrontBageful> {
                               },
                               child: Icon(
                                 Icons.menu,color: Colors.white,size: 40,))),
-                      InkWell(
-                        onTap: (){
-                          print(tabelName1);
-                        },
-                        child: Text(
-                          'الورشة',
-                          style: TextStyle(
-                              fontSize: 40,
-                              color: Colors.white,
-                              fontFamily: 'AmiriQuran',
-                              height: 1),
-                        ),
+                      Text(
+                        'الورشة',
+                        style: TextStyle(
+                            fontSize: 40,
+                            color: Colors.white,
+                            fontFamily: 'AmiriQuran',
+                            height: 1),
                       ),
                       InkWell(
                         onTap: (){
-                          Navigator.pushReplacement(context, BouncyPageRoute(widget: EnterName()));
-                        },
+                          Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=>EnterName()));                        },
                           child: Icon(Icons.arrow_forward_ios,color: Colors.white,size: 30,))
                     ],
                   ),
@@ -489,7 +476,7 @@ class CardScrollWidget extends StatelessWidget {
                                         textDirection: TextDirection.rtl,
                                         style: TextStyle(
                                             color: Colors.blue[900],
-                                            fontSize: 21.0,
+                                            fontSize: 19.0,
                                             fontFamily: 'AmiriQuran',
                                           height: 1,
                                         )),

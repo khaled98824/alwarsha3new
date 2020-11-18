@@ -63,7 +63,7 @@ class _MassrofatFState extends State<MassrofatF> {
               title: Text(
                 'المدفوعات',
                 style: TextStyle(
-                    fontSize: 28, fontFamily: 'AmiriQuran', height: 1),
+                    fontSize: 25, fontFamily: 'AmiriQuran', height: 1),
               ),
             ),
             body: ListView(
@@ -71,14 +71,7 @@ class _MassrofatFState extends State<MassrofatF> {
                   width: MediaQuery.of(context).size.width,
                   height: MediaQuery.of(context).size.height,
                   decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                          colors: [
-                            Color(0xFF1b1e44),
-                            Color(0xFF2d3447),
-                          ],
-                          begin: Alignment.bottomCenter,
-                          end: Alignment.topCenter,
-                          tileMode: TileMode.clamp)),
+                    color: Color(0xFF1b1e44),),
                   child: Column(
                     children: <Widget>[
                       Padding(padding: EdgeInsets.only(top: 30)),
@@ -144,7 +137,7 @@ class _MassrofatFState extends State<MassrofatF> {
                                 children: <Widget>[
                                   SizedBox(
                                     width: 200,
-                                    height: 50,
+                                    height: 48,
                                     child: Card(
                                       elevation: 0,
                                       child: Container(
@@ -153,7 +146,6 @@ class _MassrofatFState extends State<MassrofatF> {
                                           textAlign: TextAlign.right,
                                           keyboardType: TextInputType.text,
                                           enableInteractiveSelection: true,
-                                          maxLines: 2,
                                           decoration: InputDecoration(
                                             enabledBorder: OutlineInputBorder(
                                                 borderSide: BorderSide(
@@ -162,6 +154,10 @@ class _MassrofatFState extends State<MassrofatF> {
                                                 BorderRadius.circular(10)),
 
                                             hintText: '!...أدخل إسم المستلم هنا',
+                                            hintStyle: TextStyle(
+                                              fontSize: 17,
+                                              height: 1
+                                            )
                                           ),
                                           cursorRadius: Radius.circular(10),
                                           onChanged: (val){
@@ -187,13 +183,14 @@ class _MassrofatFState extends State<MassrofatF> {
                                   )
                                 ],
                               ),
+                              SizedBox(height: 10,),
                               Wrap(
                                 crossAxisAlignment: WrapCrossAlignment.center,
                                 alignment: WrapAlignment.center,
                                 children: <Widget>[
                                   SizedBox(
                                     width: 200,
-                                    height: 50,
+                                    height: 48,
                                     child: Card(
                                       elevation: 0,
                                       child: Container(
@@ -215,6 +212,10 @@ class _MassrofatFState extends State<MassrofatF> {
                                               BorderRadius.circular(10),
                                             ),
                                             hintText: '!...أدخل قيمة الدفعة هنا',
+                                            hintStyle: TextStyle(
+                                                fontSize: 17,
+                                                height: 1
+                                            ),
                                             fillColor: Colors.white,
                                             hoverColor: Colors.white,
                                           ),
@@ -242,54 +243,7 @@ class _MassrofatFState extends State<MassrofatF> {
                                   )
                                 ],
                               ),
-                              Container(
-                                child: Wrap(
-                                  crossAxisAlignment: WrapCrossAlignment.center,
-                                  children: <Widget>[
-                                    DropdownButton<String>(
-                                      iconSize: 30,
-                                      style:TextStyle(color: Colors.red),
-                                      items: dropItems.map((String selectItem){
-                                        return DropdownMenuItem(
-                                            value: selectItem,
-                                            child: Text(selectItem)
-                                        );
-                                      }
-                                      ).toList(),
-                                      isExpanded: false,
-                                      dropdownColor: Colors.blue[50],
-                                      iconEnabledColor: Colors.red,
-                                      icon: Icon(Icons.menu),
-                                      onChanged: (String theDate){
-                                        setState(() {
-                                          dropSelectItem = theDate;
-                                          if(theDate =='إلتقاط تاريخ اليوم تلقائياً'){
-                                          }else{
-                                            showDatePicker(
-                                                context: context,
-                                                initialDate: DateTime.now(),
-                                                firstDate: DateTime(2020),
-                                                lastDate: DateTime(2222)
-                                            ).then((date){
-                                              setState(() {
-                                               time = DateFormat('yyyy-MM-dd-HH:mm').format(date).toString();
-                                              });
-                                            });
-                                          }
-                                        }
-                                        );
-                                      },
-                                      value: dropSelectItem,
-                                      elevation: 7,
-                                    ),
-                                    Text('تحديد التاريخ :',textAlign: TextAlign.center,
-                                      style: TextStyle(
-
-                                      )
-                                      ,),
-                                  ],
-                                ),
-                              ),
+                             SizedBox(height: 20,),
                               RaisedButton(
                                   child: Text(
                                     'سجل',
@@ -304,7 +258,7 @@ class _MassrofatFState extends State<MassrofatF> {
 
                                     if (nameText.isNotEmpty && amountTextController.text !='') {
                                       amount = double.parse(amountText);
-                                      addYom();
+                                      addMadfoaat();
                                     }else{
                                       ShowMessage2();
                                     }
@@ -386,18 +340,28 @@ class _MassrofatFState extends State<MassrofatF> {
     return massrofReference;
   }
 
-  void addYom() {
+  void addMadfoaat() {
     Firestore.instance.collection('Madfoaat:$tabelNameSet').document().setData({
       'UserName': tabelNameSet,
       'time': DateFormat('yyyy-MM-dd-HH:mm').format(DateTime.now()),
       'amount':amount,
-      'name': nameTextController.text
+      'name': nameTextController.text,
+      'zoneName':nameZoneSet,
 
     });
     Timer(Duration(milliseconds: 300),(){
       nameTextController.clear();
       amountTextController.clear();
       ShowMessage1();
+    });
+
+    Firestore.instance.collection('Madfoaat2:$tabelNameSet').document().setData({
+      'UserName': tabelNameSet,
+      'time': DateFormat('yyyy-MM-dd-HH:mm').format(DateTime.now()),
+      'amount':amount,
+      'name': nameTextController.text,
+      'zoneName':nameZoneSet,
+
     });
   }
 

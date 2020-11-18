@@ -31,14 +31,7 @@ class _AboutApp extends State<AboutApp> {
         children: <Widget>[
           Container(
               decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                      colors: [
-                        Color(0xFF1b1e44),
-                        Color(0xFF2d3447),
-                      ],
-                      begin: Alignment.bottomCenter,
-                      end: Alignment.topCenter,
-                      tileMode: TileMode.clamp)),
+                color: Color(0xFF1b1e44),),
               child: Column(
                 children: <Widget>[
                   Padding(
